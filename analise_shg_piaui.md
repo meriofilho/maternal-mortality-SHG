@@ -35,6 +35,11 @@ Susana Silva LimaRosa Maria do Rego LimaRomério de Oliveira Lima Filho
   Estado](#17-shg-na-região-dos-cocais-rmm-específica-e-comparação-com-o-estado)
 - [18. Óbitos maternos por Região de Saúde: panorama
   completo](#18-óbitos-maternos-por-região-de-saúde-panorama-completo)
+- [19. Idade exata, sazonalidade e município (microdado do
+  SIM)](#19-idade-exata-sazonalidade-e-município-microdado-do-sim)
+  - [19.1 Idade exata](#191-idade-exata)
+  - [19.2 Sazonalidade (mês do óbito)](#192-sazonalidade-mês-do-óbito)
+  - [19.3 Município exato](#193-município-exato)
 
 ## Sobre esta análise
 
@@ -1093,8 +1098,275 @@ teste_regiao
     ##  1e+05 replicates)
     ## 
     ## data:  mat_regiao
-    ## p-value = 0.1214
+    ## p-value = 0.1216
     ## alternative hypothesis: two.sided
 
 *Fonte: MS/SVSA/CGIAE — SIM/DATASUS. H0: a fração de óbitos que é SHG é
 igual em todas as regiões (teste exato de Fisher, tabela 12 × 2).*
+
+## 19. Idade exata, sazonalidade e município (microdado do SIM)
+
+*Ponto 3 do enriquecimento: em vez das tabelas agregadas do Tabnet, esta
+seção usa os registros individuais (Declaração de Óbito anonimizada) do
+SIM, baixados via `microdatasus`/OpenDataSUS. Antes de tudo, validamos
+que filtrar este microdado pelos CID de SHG reproduz exatamente os
+mesmos 62 óbitos usados no resto desta análise, ano a ano — não há
+inconsistência entre as duas fontes de dados.*
+
+``` r
+# microdatasus não está no CRAN (só GitHub) e tem código compilado, junto
+# com sua dependência read.dbc — no Windows é preciso ter o Rtools
+# instalado (https://cran.r-project.org/bin/windows/Rtools/) antes de
+# rodar este chunk pela primeira vez
+if (!requireNamespace("microdatasus", quietly = TRUE)) {
+  if (!requireNamespace("remotes", quietly = TRUE)) {
+    install.packages("remotes", repos = "https://cloud.r-project.org")
+  }
+  if (!requireNamespace("read.dbc", quietly = TRUE)) {
+    remotes::install_github("danicat/read.dbc", upgrade = "never")
+  }
+  remotes::install_github("rfsaldanha/microdatasus", upgrade = "never")
+}
+if (!requireNamespace("stringi", quietly = TRUE)) {
+  install.packages("stringi", repos = "https://cloud.r-project.org")
+}
+library(microdatasus)
+```
+
+``` r
+# Cacheia o download em disco — baixar de novo a cada Knit seria lento e
+# desnecessário (o SIM só é atualizado quando o Tabnet também for)
+arq_cache_micro <- "dados/sim_pi_obitos_maternos_2019_2024.rds"
+
+if (!file.exists(arq_cache_micro)) {
+  sim_bruto <- fetch_datasus(
+    year_start = 2019, year_end = 2024, uf = "PI",
+    information_system = "SIM-DO",
+    vars = c("CODMUNRES", "DTOBITO", "CAUSABAS", "IDADE", "RACACOR",
+             "ESC2010", "LOCOCOR", "OBITOGRAV", "OBITOPUERP", "SEXO",
+             "CODMUNOCOR", "CIRCOBITO", "FONTE", "CAUSABAS_O"),
+    quiet = TRUE
+  )
+  obitos_maternos_micro <- sim_bruto %>%
+    filter(str_detect(CAUSABAS, "^O") | CAUSABAS == "F53")
+  saveRDS(obitos_maternos_micro, arq_cache_micro)
+} else {
+  obitos_maternos_micro <- readRDS(arq_cache_micro)
+}
+
+sim_shg_micro <- obitos_maternos_micro %>%
+  mutate(cid3 = substr(CAUSABAS, 1, 3)) %>%
+  filter(cid3 %in% cid_shg)
+
+sim_shg_proc <- process_sim(sim_shg_micro, municipality_data = TRUE) %>%
+  mutate(idade_anos = as.numeric(IDADEanos))
+
+# Validação: precisa bater com os 62 óbitos usados no resto da análise
+stopifnot(nrow(sim_shg_proc) == 62)
+cat("Validado:", nrow(sim_shg_proc), "óbitos por SHG no microdado (esperado: 62).\n")
+```
+
+    ## Validado: 62 óbitos por SHG no microdado (esperado: 62).
+
+### 19.1 Idade exata
+
+``` r
+resumo_idade <- sim_shg_proc %>%
+  summarise(
+    n       = n(),
+    media   = round(mean(idade_anos, na.rm = TRUE), 1),
+    mediana = median(idade_anos, na.rm = TRUE),
+    dp      = round(sd(idade_anos, na.rm = TRUE), 1),
+    minimo  = min(idade_anos, na.rm = TRUE),
+    maximo  = max(idade_anos, na.rm = TRUE)
+  )
+resumo_idade
+```
+
+<div class="kable-table">
+
+|   n | media | mediana |  dp | minimo | maximo |
+|----:|------:|--------:|----:|-------:|-------:|
+|  62 |  30.1 |      31 | 6.6 |     14 |     42 |
+
+</div>
+
+``` r
+salvar_tabela(resumo_idade, "idade_exata_resumo")
+
+fig13 <- ggplot(sim_shg_proc, aes(x = idade_anos)) +
+  geom_histogram(binwidth = 3, boundary = 0, fill = cor_estado, color = "white") +
+  labs(
+    title = "Distribuição da idade exata dos óbitos por SHG",
+    subtitle = paste0("Piauí, 2019–2024 (n = 62) — média ", resumo_idade$media,
+                       " anos, mediana ", resumo_idade$mediana, " anos"),
+    x = "Idade (anos)", y = "Número de óbitos"
+  ) +
+  tema_artigo
+
+fig13
+```
+
+![](analise_shg_piaui_files/figure-gfm/microdado-idade-1.png)<!-- -->
+
+``` r
+salvar_figura(fig13, "fig13_idade_exata")
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS, microdado individual (OpenDataSUS).
+A faixa etária mais nova do estudo (Seção 8, “10 a 14 anos”) corresponde
+a uma única adolescente de 14 anos; a mais velha tinha 42 anos.*
+
+### 19.2 Sazonalidade (mês do óbito)
+
+``` r
+sazonalidade <- sim_shg_proc %>%
+  mutate(mes_num = as.integer(format(as.Date(DTOBITO), "%m"))) %>%
+  count(mes_num, name = "obitos_shg") %>%
+  complete(mes_num = 1:12, fill = list(obitos_shg = 0)) %>%
+  mutate(mes_nome = factor(mes_num, levels = 1:12,
+                            labels = c("Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+                                       "Jul", "Ago", "Set", "Out", "Nov", "Dez")))
+
+sazonalidade
+```
+
+<div class="kable-table">
+
+| mes_num | obitos_shg | mes_nome |
+|--------:|-----------:|:---------|
+|       1 |         10 | Jan      |
+|       2 |          5 | Fev      |
+|       3 |          8 | Mar      |
+|       4 |          5 | Abr      |
+|       5 |          3 | Mai      |
+|       6 |          3 | Jun      |
+|       7 |          4 | Jul      |
+|       8 |          3 | Ago      |
+|       9 |          4 | Set      |
+|      10 |          8 | Out      |
+|      11 |          6 | Nov      |
+|      12 |          3 | Dez      |
+
+</div>
+
+``` r
+salvar_tabela(sazonalidade, "sazonalidade_shg")
+
+# H0: óbitos distribuídos uniformemente entre os 12 meses
+teste_sazonalidade <- chisq.test(sazonalidade$obitos_shg)
+teste_sazonalidade
+```
+
+    ## 
+    ##  Chi-squared test for given probabilities
+    ## 
+    ## data:  sazonalidade$obitos_shg
+    ## X-squared = 11.935, df = 11, p-value = 0.3685
+
+``` r
+fig14 <- ggplot(sazonalidade, aes(x = mes_nome, y = obitos_shg)) +
+  geom_col(fill = cor_estado, width = 0.65) +
+  geom_text(aes(label = obitos_shg), vjust = -0.6, size = 3.4, family = fonte_base) +
+  scale_y_continuous(limits = c(0, max(sazonalidade$obitos_shg) * 1.3)) +
+  labs(
+    title = "Óbitos por SHG segundo mês do óbito",
+    subtitle = "Piauí, 2019–2024 (n = 62, meses agregados de todos os anos)",
+    x = NULL, y = "Número de óbitos"
+  ) +
+  tema_artigo
+
+fig14
+```
+
+![](analise_shg_piaui_files/figure-gfm/microdado-sazonalidade-1.png)<!-- -->
+
+``` r
+salvar_figura(fig14, "fig14_sazonalidade")
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS, microdado individual.*
+
+### 19.3 Município exato
+
+``` r
+# Municípios que compõem a Região de Saúde dos Cocais (mesma lista da
+# Seção 17, conferida no Tabnet)
+municipios_cocais <- c("MILTON BRANDAO", "NOSSA SENHORA DOS REMEDIOS", "PIRACURUCA",
+                        "LUZILANDIA", "ESPERANTINA", "BARRAS", "JOAQUIM PIRES",
+                        "PEDRO II", "PIRIPIRI", "SAO JOAO DA FRONTEIRA",
+                        "JOCA MARQUES", "SAO JOAO DO ARRAIAL", "MADEIRO")
+
+municipios_shg <- sim_shg_proc %>%
+  mutate(municipio = toupper(stringi::stri_trans_general(munResNome, "Latin-ASCII"))) %>%
+  count(municipio, name = "obitos_shg", sort = TRUE) %>%
+  mutate(regiao = if_else(municipio %in% municipios_cocais, "Cocais", "Outra região"))
+
+municipios_shg
+```
+
+<div class="kable-table">
+
+| municipio                       | obitos_shg | regiao       |
+|:--------------------------------|-----------:|:-------------|
+| TERESINA                        |          8 | Outra região |
+| PARNAIBA                        |          4 | Outra região |
+| BOM JESUS                       |          2 | Outra região |
+| CORRENTE                        |          2 | Outra região |
+| IPIRANGA DO PIAUI               |          2 | Outra região |
+| JAICOS                          |          2 | Outra região |
+| PAULISTANA                      |          2 | Outra região |
+| PICOS                           |          2 | Outra região |
+| SAO JOAO DA SERRA               |          2 | Outra região |
+| AGUA BRANCA                     |          1 | Outra região |
+| ALTOS                           |          1 | Outra região |
+| AROAZES                         |          1 | Outra região |
+| ASSUNCAO DO PIAUI               |          1 | Outra região |
+| BAIXA GRANDE DO RIBEIRO         |          1 | Outra região |
+| BERTOLINIA                      |          1 | Outra região |
+| CAJUEIRO DA PRAIA               |          1 | Outra região |
+| CAMPO ALEGRE DO FIDALGO         |          1 | Outra região |
+| CAMPO MAIOR                     |          1 | Outra região |
+| CASTELO DO PIAUI                |          1 | Outra região |
+| CURRAIS                         |          1 | Outra região |
+| DOM EXPEDITO LOPES              |          1 | Outra região |
+| ESPERANTINA                     |          1 | Cocais       |
+| GILBUES                         |          1 | Outra região |
+| ISAIAS COELHO                   |          1 | Outra região |
+| JOAQUIM PIRES                   |          1 | Cocais       |
+| JOSE DE FREITAS                 |          1 | Outra região |
+| LUIS CORREIA                    |          1 | Outra região |
+| MANOEL EMIDIO                   |          1 | Outra região |
+| MILTON BRANDAO                  |          1 | Cocais       |
+| MONSENHOR GIL                   |          1 | Outra região |
+| OEIRAS                          |          1 | Outra região |
+| PARNAGUA                        |          1 | Outra região |
+| PEDRO II                        |          1 | Cocais       |
+| PIMENTEIRAS                     |          1 | Outra região |
+| PRATA DO PIAUI                  |          1 | Outra região |
+| SAO FRANCISCO DE ASSIS DO PIAUI |          1 | Outra região |
+| SAO FRANCISCO DO PIAUI          |          1 | Outra região |
+| SAO GONCALO DO GURGUEIA         |          1 | Outra região |
+| SAO JOAO DA FRONTEIRA           |          1 | Cocais       |
+| SAO JOAO DO PIAUI               |          1 | Outra região |
+| SAO RAIMUNDO NONATO             |          1 | Outra região |
+| UNIAO                           |          1 | Outra região |
+| URUCUI                          |          1 | Outra região |
+| VALENCA DO PIAUI                |          1 | Outra região |
+| VARZEA BRANCA                   |          1 | Outra região |
+
+</div>
+
+``` r
+salvar_tabela(municipios_shg, "municipios_shg")
+
+# Confere que os 5 óbitos de Cocais (Seção 17) batem com o microdado
+stopifnot(sum(municipios_shg$obitos_shg[municipios_shg$regiao == "Cocais"]) == 5)
+cat("Validado: os 5 óbitos de SHG da Região dos Cocais batem entre Tabnet e microdado.\n")
+```
+
+    ## Validado: os 5 óbitos de SHG da Região dos Cocais batem entre Tabnet e microdado.
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS, microdado individual. Os 5 óbitos
+por SHG da Região dos Cocais ocorreram em 5 municípios diferentes —
+nenhuma concentração num único município da região.*

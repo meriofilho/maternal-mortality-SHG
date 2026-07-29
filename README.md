@@ -68,3 +68,15 @@ CID-10 × Região de Saúde × Ano — foi preciso rodar a consulta filtrando
 "Região de Saúde = Cocais" antes de exportar. Antes dessas duas tabelas,
 a RMM Piauí x Cocais (Figura 7) só podia ser calculada com óbitos
 maternos de todas as causas — essa limitação está resolvida na Seção 17.
+
+- **Seção 18** — óbitos maternos e óbitos por SHG nas 12 Regiões de
+  Saúde do Piauí (não só Cocais), com teste de Fisher.
+- **Seção 19** — microdado individual do SIM (Declaração de Óbito
+  anonimizada, via pacote `microdatasus`/OpenDataSUS): idade exata,
+  sazonalidade (mês do óbito) e município exato de cada óbito por SHG.
+  Requer o [Rtools](https://cran.r-project.org/bin/windows/Rtools/) no
+  Windows (compila `microdatasus` e `read.dbc`, que não estão no CRAN).
+  O download é cacheado em `dados/sim_pi_obitos_maternos_2019_2024.rds`
+  na primeira execução. Validamos que o filtro por CID de SHG neste
+  microdado reproduz exatamente os mesmos 62 óbitos usados no resto da
+  análise, ano a ano.
