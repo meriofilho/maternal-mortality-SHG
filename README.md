@@ -48,12 +48,23 @@ Os gráficos usam a fonte **Roboto** (baixada automaticamente do Google
 Fonts via `sysfonts`/`showtext` na primeira execução — é necessário
 estar conectado à internet nesse momento).
 
-## Limitação metodológica importante
+## Análises estatísticas (além do descritivo)
 
-A comparação de Razão de Mortalidade Materna (RMM) entre o Estado e a
-Região dos Cocais (Figura 7) usa óbitos maternos de **todas as causas**,
-não apenas SHG — o Tabnet não disponibiliza uma tabela pronta cruzando
-CID-10 × Região de Saúde × Ano. Para obter a contagem de óbitos por SHG
-especificamente na Região dos Cocais, é necessário gerar uma consulta
-adicional no Tabnet (mesma tela de "Óbitos por Categoria CID-10 e Ano",
-filtrando Região de Saúde = Cocais).
+Seções 15–17 do `.Rmd` vão além da estatística descritiva:
+
+- **Seção 15** — teste exato de Fisher comparando o perfil sociodemográfico
+  de quem morreu por SHG com o de quem morreu por outras causas maternas
+  (faixa etária, raça/cor, escolaridade, local de ocorrência).
+- **Seção 16** — IC 95% da proporção de SHG por ano, teste de tendência
+  de Cochran-Armitage e regressão de Poisson na RMM específica de SHG.
+- **Seção 17** — RMM específica de SHG comparando Piauí x Região dos
+  Cocais, incluindo teste de razão de taxas (Poisson exato) Cocais x
+  resto do Estado.
+
+A Seção 17 usa duas tabelas extras (`dados/shg_regiao_saude_2019_2024.tsv`
+e `dados/shg_cocais_ano_2019_2024.tsv`) obtidas com uma consulta manual
+no Tabnet (SIM/PI), já que o Tabnet não gera uma tabela pronta cruzando
+CID-10 × Região de Saúde × Ano — foi preciso rodar a consulta filtrando
+"Região de Saúde = Cocais" antes de exportar. Antes dessas duas tabelas,
+a RMM Piauí x Cocais (Figura 7) só podia ser calculada com óbitos
+maternos de todas as causas — essa limitação está resolvida na Seção 17.

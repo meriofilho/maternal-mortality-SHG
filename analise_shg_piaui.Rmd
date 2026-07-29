@@ -40,7 +40,7 @@ tabelas em `figuras/` e `tabelas/`.
 
 ```{r pacotes}
 pacotes <- c("readxl", "dplyr", "tidyr", "stringr", "forcats",
-             "ggplot2", "scales", "readr", "sysfonts", "showtext")
+             "ggplot2", "scales", "readr", "sysfonts", "showtext", "tibble")
 faltando <- pacotes[!(pacotes %in% installed.packages()[, "Package"])]
 if (length(faltando) > 0) install.packages(faltando, repos = "https://cloud.r-project.org")
 invisible(lapply(pacotes, library, character.only = TRUE))
@@ -99,10 +99,9 @@ paleta_shg <- c("#DCEAE8", "#B7D3D0", "#7FADA9", "#4A8A85", "#2B6F6B", "#194845"
 ## 4. Funções auxiliares
 
 ```{r funcoes}
-# Lê uma tabela "Categoria CID-10 x dimensão" do Tabnet e mantém só as
-# linhas de SHG
-ler_tabela_cid <- function(caminho, aba, skip = 3) {
-  bruto <- read_excel(caminho, sheet = aba, skip = skip)
+# Processa uma tabela crua "Categoria CID-10 x dimensão" (já lida, de xlsx
+# ou de texto) e mantém só as linhas de SHG
+processar_tabela_cid <- function(bruto) {
   names(bruto)[1] <- "categoria_cid"
 
   bruto %>%
@@ -116,6 +115,68 @@ ler_tabela_cid <- function(caminho, aba, skip = 3) {
     relocate(cid, rotulo) %>%
     mutate(across(-c(cid, rotulo),
                   ~ as.numeric(str_replace(as.character(.), "^-$", "0"))))
+}
+
+# Lê uma tabela "Categoria CID-10 x dimensão" exportada do Tabnet em xlsx
+ler_tabela_cid <- function(caminho, aba, skip = 3) {
+  processar_tabela_cid(read_excel(caminho, sheet = aba, skip = skip))
+}
+
+# Mesma coisa, mas para as tabelas extras copiadas manualmente do Tabnet
+# em .tsv (Seção 17 — Tabnet não permite cruzar 3 dimensões de uma vez,
+# então essas foram geradas filtrando "Região de Saúde" antes de exportar)
+ler_tabela_cid_txt <- function(caminho, skip = 0) {
+  processar_tabela_cid(read_delim(caminho, delim = "\t", skip = skip, show_col_types = FALSE))
+}
+
+# Monta SHG vs Não-SHG por categoria de uma dimensão sociodemográfica, a
+# partir da MESMA planilha usada em ler_tabela_cid (que já traz todas as
+# categorias de CID-10, não só SHG) — usado nos testes de associação
+# da Seção 15
+tabela_shg_vs_naoshg <- function(caminho, aba, skip = 3) {
+  bruto <- read_excel(caminho, sheet = aba, skip = skip)
+  names(bruto)[1] <- "categoria_cid"
+  bruto_num <- bruto %>%
+    mutate(across(-categoria_cid, ~ as.numeric(str_replace(as.character(.), "^-$", "0"))))
+
+  total_vec <- bruto_num %>%
+    filter(categoria_cid == "Total") %>%
+    select(-categoria_cid, -Total) %>%
+    unlist()
+
+  shg_vec <- bruto_num %>%
+    filter(str_extract(categoria_cid, "^[A-Z][0-9]{2}") %in% cid_shg) %>%
+    select(-categoria_cid, -Total) %>%
+    summarise(across(everything(), sum)) %>%
+    unlist()
+
+  tibble(
+    categoria = names(total_vec),
+    SHG       = as.integer(shg_vec),
+    Não_SHG   = as.integer(total_vec - shg_vec)
+  )
+}
+
+# Teste exato de Fisher (SHG x Não-SHG) para uma dimensão sociodemográfica.
+# H0: a distribuição da variável é igual entre os dois grupos. Cai para
+# p-valor simulado (Monte Carlo) se a tabela for grande demais para o
+# cálculo exato.
+teste_shg_vs_naoshg <- function(caminho, aba, skip = 3) {
+  tab <- tabela_shg_vs_naoshg(caminho, aba, skip)
+  mat <- as.matrix(tab[, c("SHG", "Não_SHG")])
+  rownames(mat) <- tab$categoria
+
+  teste <- tryCatch(
+    fisher.test(mat),
+    error = function(e) fisher.test(mat, simulate.p.value = TRUE, B = 100000)
+  )
+
+  tab %>%
+    mutate(
+      pct_SHG     = round(SHG / sum(SHG) * 100, 1),
+      pct_Não_SHG = round(Não_SHG / sum(Não_SHG) * 100, 1),
+      p_valor     = teste$p.value
+    )
 }
 
 # Soma as categorias de SHG em cada dimensão sociodemográfica (perfil).
@@ -193,10 +254,17 @@ obitos_totais_ano <- read_excel(arq_obitos, sheet = "sim_cnv_mat10pi091246191_36
   mutate(ano = as.integer(ano), obitos_totais = as.numeric(obitos_totais))
 
 # RMM (Razão de Mortalidade Materna) Piauí x Região dos Cocais - todas as
-# causas de óbito materno (o Tabnet não tem tabela pronta CID x Região x Ano)
+# causas de óbito materno
 rmm_valor <- read_excel(arq_graf, sheet = "Comparação RMM Estado x Região", range = "A11:G13") %>%
   rename(area = 1) %>%
   pivot_longer(-area, names_to = "ano", values_to = "rmm") %>%
+  mutate(ano = as.integer(ano), area = str_trim(area))
+
+# Nascidos vivos por ano (Piauí e Região dos Cocais) — denominador usado
+# nas RMM gerais e na RMM específica de SHG (Seção 17)
+nascidos_vivos <- read_excel(arq_graf, sheet = "Comparação RMM Estado x Região", range = "A7:G9") %>%
+  rename(area = 1) %>%
+  pivot_longer(-area, names_to = "ano", values_to = "nascidos_vivos") %>%
   mutate(ano = as.integer(ano), area = str_trim(area))
 ```
 
@@ -230,6 +298,15 @@ fig1 <- ggplot(dist_tipo, aes(x = rotulo, y = Total, fill = rotulo)) +
 
 fig1
 salvar_figura(fig1, "fig1_distribuicao_tipo_shg")
+
+# IC 95% (exato, binomial) do percentual de cada tipo dentro do total de
+# SHG — útil para o texto do artigo, não aparece na figura
+ic_tipo <- mapply(function(x, n) binom.test(x, n)$conf.int * 100,
+                   dist_tipo$Total, sum(dist_tipo$Total))
+dist_tipo <- dist_tipo %>%
+  mutate(ic95_inf = round(ic_tipo[1, ], 1), ic95_sup = round(ic_tipo[2, ], 1))
+
+dist_tipo
 salvar_tabela(dist_tipo, "distribuicao_tipo")
 ```
 
@@ -336,9 +413,9 @@ tabela exportada.*
 ## 12. Figura 7 — Comparação RMM: Piauí x Região dos Cocais
 
 *Objetivo geral: comparação da mortalidade materna entre a Região dos
-Cocais e o Estado. **Atenção:** RMM calculada com óbitos maternos de
-TODAS as causas — o Tabnet não oferece uma tabela pronta CID x Região x
-Ano para isolar a SHG por região (ver observação no README).*
+Cocais e o Estado. Esta primeira figura usa óbitos maternos de TODAS as
+causas, como panorama geral — a RMM específica de SHG por região, obtida
+com uma consulta adicional no Tabnet, está na Seção 17.*
 
 ```{r figura7}
 fig7 <- ggplot(rmm_valor, aes(x = factor(ano), y = rmm, fill = area, group = area)) +
@@ -360,7 +437,7 @@ salvar_figura(fig7, "fig7_rmm_piaui_cocais")
 salvar_tabela(rmm_valor, "rmm_piaui_cocais")
 ```
 
-*Fonte: SIM e SINASC/DATASUS. RMM não é específica de SHG — ver observação acima.*
+*Fonte: SIM e SINASC/DATASUS. RMM de todas as causas — a versão específica de SHG está na Seção 17.*
 
 ## 13. Figuras extras (material suplementar)
 
@@ -408,6 +485,178 @@ estat_desc_ano <- evolucao %>%
 estat_desc_ano
 salvar_tabela(estat_desc_ano, "estatistica_descritiva_ano")
 ```
+
+## 15. Testes de associação: perfil sociodemográfico SHG x demais causas
+
+*Enriquecimento estatístico: em vez de só descrever o perfil de quem
+morreu por SHG, compara esse perfil com o de quem morreu por outras
+causas maternas no mesmo período — teste exato de Fisher em tabela de
+contingência (H0: a distribuição da variável não difere entre os dois
+grupos; p < 0,05 rejeita H0).*
+
+```{r testes-associacao}
+resultados_associacao <- list(
+  "Faixa etária"        = teste_shg_vs_naoshg(arq_obitos, "fx etaria"),
+  "Raça/cor"             = teste_shg_vs_naoshg(arq_obitos, "raça cor"),
+  "Escolaridade"          = teste_shg_vs_naoshg(arq_obitos, "escolaridade"),
+  "Local de ocorrência"   = teste_shg_vs_naoshg(arq_obitos, "local ocorrencia")
+)
+
+resumo_p_associacao <- tibble(
+  dimensao = names(resultados_associacao),
+  p_valor  = vapply(resultados_associacao, function(x) unique(x$p_valor), numeric(1))
+) %>%
+  mutate(significativo_5pct = ifelse(p_valor < 0.05, "Sim", "Não"))
+
+resumo_p_associacao
+```
+
+```{r testes-associacao-detalhe}
+resultados_associacao[["Faixa etária"]]
+resultados_associacao[["Raça/cor"]]
+resultados_associacao[["Escolaridade"]]
+resultados_associacao[["Local de ocorrência"]]
+
+salvar_tabela(resumo_p_associacao, "associacao_resumo_pvalores")
+salvar_tabela(resultados_associacao[["Faixa etária"]], "associacao_faixa_etaria")
+salvar_tabela(resultados_associacao[["Raça/cor"]], "associacao_raca_cor")
+salvar_tabela(resultados_associacao[["Escolaridade"]], "associacao_escolaridade")
+salvar_tabela(resultados_associacao[["Local de ocorrência"]], "associacao_local_ocorrencia")
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS. "Não-SHG" = todos os demais óbitos
+maternos do período (todas as causas exceto O10, O11, O13-O16).*
+
+## 16. Tendência temporal: testes formais e intervalos de confiança
+
+*Enriquecimento estatístico: formaliza a leitura da Seção 7 com um
+intervalo de confiança em cada ano, um teste de tendência na proporção
+(Cochran-Armitage) e uma regressão de Poisson na razão de mortalidade
+específica de SHG (óbitos SHG / nascidos vivos), que ajusta pela
+variação do denominador populacional ano a ano.*
+
+```{r tendencia-temporal}
+# IC 95% exato (binomial) da % de SHG no total de óbitos maternos, por ano
+ic_evolucao <- mapply(function(x, n) binom.test(x, n)$conf.int * 100,
+                       evolucao$obitos_shg, evolucao$obitos_totais)
+evolucao <- evolucao %>%
+  mutate(ic95_inf = round(ic_evolucao[1, ], 1), ic95_sup = round(ic_evolucao[2, ], 1))
+
+evolucao
+salvar_tabela(evolucao, "evolucao_temporal")
+
+# Teste de tendência (Cochran-Armitage) — a proporção de SHG entre os
+# óbitos maternos muda de forma monotônica ao longo dos anos?
+teste_tendencia_prop <- prop.trend.test(x = evolucao$obitos_shg,
+                                          n = evolucao$obitos_totais,
+                                          score = evolucao$ano)
+teste_tendencia_prop
+```
+
+```{r tendencia-rmm-shg}
+# Regressão de Poisson: tendência na RMM específica de SHG (óbitos SHG
+# por 100 mil nascidos vivos), Piauí, 2019-2024
+nascidos_vivos_estado <- nascidos_vivos %>% filter(area == "Estado")
+
+evolucao_rmm <- evolucao %>%
+  left_join(select(nascidos_vivos_estado, ano, nascidos_vivos), by = "ano") %>%
+  mutate(rmm_shg = obitos_shg / nascidos_vivos * 100000)
+
+evolucao_rmm
+
+modelo_tendencia_rmm <- glm(obitos_shg ~ ano, offset = log(nascidos_vivos),
+                             family = poisson, data = evolucao_rmm)
+summary(modelo_tendencia_rmm)
+
+# Razão de taxas por ano adicional (ex.: 0,95 = queda de ~5% ao ano na RMM-SHG)
+razao_taxa_anual <- exp(coef(modelo_tendencia_rmm)["ano"])
+ic_razao_taxa_anual <- exp(confint(modelo_tendencia_rmm)["ano", ])
+c(razao_taxa_anual = razao_taxa_anual, ic_razao_taxa_anual)
+
+salvar_tabela(evolucao_rmm, "evolucao_rmm_shg_piaui")
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS e SINASC/DATASUS.*
+
+## 17. SHG na Região dos Cocais: RMM específica e comparação com o Estado
+
+*Fecha a lacuna da Seção 12: o Tabnet não gera uma tabela pronta cruzando
+CID-10 × Região de Saúde × Ano, então essas duas tabelas foram obtidas com
+uma consulta adicional no Tabnet (SIM/PI), filtrando "Região de Saúde =
+Cocais" antes de exportar — arquivos em `dados/shg_regiao_saude_2019_2024.tsv`
+e `dados/shg_cocais_ano_2019_2024.tsv`. Com poucos eventos por ano na
+Região dos Cocais (0 a 3), os intervalos de confiança são largos —
+interpretar com cautela.*
+
+```{r cocais-leitura}
+shg_regiao     <- ler_tabela_cid_txt("dados/shg_regiao_saude_2019_2024.tsv")
+shg_cocais_ano <- ler_tabela_cid_txt("dados/shg_cocais_ano_2019_2024.tsv")
+
+# Óbitos por SHG na Região dos Cocais, por ano
+cocais_ano <- shg_cocais_ano %>%
+  select(-cid, -rotulo, -Total) %>%
+  summarise(across(everything(), sum)) %>%
+  pivot_longer(everything(), names_to = "ano", values_to = "obitos_shg") %>%
+  mutate(ano = as.integer(ano), area = "Cocais")
+
+estado_ano <- evolucao %>% transmute(ano, obitos_shg, area = "Estado")
+
+shg_ano_area <- bind_rows(estado_ano, cocais_ano) %>%
+  left_join(nascidos_vivos, by = c("area", "ano")) %>%
+  mutate(rmm_shg = obitos_shg / nascidos_vivos * 100000)
+
+shg_ano_area
+```
+
+```{r cocais-figura}
+fig10 <- ggplot(shg_ano_area, aes(x = factor(ano), y = rmm_shg, fill = area, group = area)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  geom_text(aes(label = ifelse(obitos_shg == 0, "0", round(rmm_shg, 1))),
+            position = position_dodge(width = 0.7), vjust = -0.5, size = 3,
+            family = fonte_base) +
+  scale_fill_manual(values = c("Cocais" = cor_cocais, "Estado" = cor_estado)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.14))) +
+  labs(
+    title = "RMM específica de SHG: Piauí x Região dos Cocais",
+    subtitle = "Por 100 mil nascidos vivos — óbitos maternos por SHG (O10-O16)",
+    x = "Ano", y = "RMM-SHG (por 100 mil NV)"
+  ) +
+  tema_artigo
+
+fig10
+salvar_figura(fig10, "fig10_rmm_shg_piaui_cocais")
+salvar_tabela(shg_ano_area, "rmm_shg_piaui_cocais_ano")
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS (consulta adicional, ver nota acima) e SINASC/DATASUS.*
+
+```{r cocais-teste-razao-taxas}
+# Comparação agregada 2019-2024: Cocais x Resto do Estado (grupos
+# independentes — evita comparar Cocais contra um total que já o inclui)
+agregado <- shg_ano_area %>%
+  group_by(area) %>%
+  summarise(obitos_shg = sum(obitos_shg), nascidos_vivos = sum(nascidos_vivos)) %>%
+  pivot_wider(names_from = area, values_from = c(obitos_shg, nascidos_vivos)) %>%
+  mutate(
+    obitos_shg_Resto     = obitos_shg_Estado - obitos_shg_Cocais,
+    nascidos_vivos_Resto = nascidos_vivos_Estado - nascidos_vivos_Cocais
+  )
+
+agregado
+
+# Teste de razão de taxas (Poisson exato) — Cocais x Resto do Estado
+teste_razao_taxas <- poisson.test(
+  x = c(agregado$obitos_shg_Cocais, agregado$obitos_shg_Resto),
+  T = c(agregado$nascidos_vivos_Cocais, agregado$nascidos_vivos_Resto)
+)
+teste_razao_taxas
+
+salvar_tabela(agregado, "rmm_shg_cocais_vs_resto_agregado")
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS e SINASC/DATASUS. `estimate` do teste
+é a razão de taxas Cocais ÷ Resto do Estado (< 1 = Cocais com RMM-SHG
+menor; intervalo cruzando 1 = diferença não significativa a 5%).*
 
 ```{r conclusao, include=FALSE}
 message("Concluído. Figuras em '", dir_figuras, "/' e tabelas em '", dir_tabelas, "/'.")

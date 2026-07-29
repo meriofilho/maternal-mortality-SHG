@@ -1,0 +1,34 @@
+Categoria CID-10	22001 Carnaubais	22002 Chapada das Mangabeiras	22003 Cocais	22004 Entre Rios	22005 Planície Litorânea	22006 Serra da Capivara	22007 Tabuleiros do Alto Parnaíba	22008 Vale do Canindé	22009 Vale do Rio Guaribas	22010 Vale do Sambito	22011 Vale dos Rios Piauí e Itaueiras	22012 Chapada Vale do Rio Itaim	Total
+Total	11	21	23	74	24	14	7	16	12	6	18	9	235
+F53 Transt mentais comport assoc puerperio NCOP	-	-	1	-	-	-	-	-	-	-	-	-	1
+O00 Gravidez ectopica	-	-	2	2	-	-	-	-	-	-	1	-	5
+O02 Outr produtos anormais da concepcao	-	-	2	-	-	1	-	-	-	1	-	-	4
+O10 Hipertens pre-exist complic grav parto puerp	-	-	1	1	-	-	-	-	-	-	-	-	2
+O13 Hipertensao gestacional s/proteinuria signif	1	-	-	1	-	-	1	-	1	-	-	1	5
+O14 Hipertensao gestacional c/proteinuria signif	1	2	3	5	2	2	-	2	2	-	-	2	21
+O15 Eclampsia	3	5	1	6	4	2	1	1	2	4	3	1	33
+O16 Hipertensao materna NE	-	1	-	-	-	-	-	-	-	-	-	-	1
+O21 Vomitos excessivos na gravidez	-	-	-	-	-	-	-	1	-	-	-	-	1
+O23 Infecc do trato geniturinario na gravidez	-	-	-	1	-	-	-	2	-	-	-	-	3
+O24 Diabetes mellitus na gravidez	1	-	1	2	1	-	-	1	-	-	1	-	7
+O26 Assist materna outr complic lig predom grav	-	-	-	-	1	-	-	1	-	-	-	-	2
+O41 Outr transt membranas e liquido amniotico	-	-	-	-	1	-	-	-	-	-	-	-	1
+O42 Ruptura prematura de membranas	1	-	-	1	-	-	-	-	-	-	-	-	2
+O44 Placenta previa	-	-	-	1	1	-	-	-	-	-	1	-	3
+O45 Descolamento prematuro da placenta	-	-	2	1	-	1	-	-	-	-	1	-	5
+O60 Trabalho de parto pre-termo	-	-	-	-	1	-	-	-	-	-	-	-	1
+O62 Anormalidades da contracao uterina	-	2	2	4	1	-	-	-	-	-	-	-	9
+O63 Trabalho de parto prolongado	-	1	-	-	-	-	-	-	-	-	-	-	1
+O67 Trab parto parto compl hemorr intrapart NCOP	-	-	-	2	-	-	-	-	-	-	-	-	2
+O71 Outr traum obstetricos	-	-	-	-	1	-	-	2	-	-	-	-	3
+O72 Hemorragia pos-parto	1	2	2	-	1	-	-	-	2	-	-	-	8
+O74 Complic anestesia durante trab parto e parto	-	-	-	-	-	1	-	-	-	-	-	-	1
+O75 Outr complic do trab parto e do parto NCOP	-	1	-	4	-	1	-	-	1	1	-	-	8
+O85 Infecc puerperal	1	1	-	9	-	-	-	1	-	-	2	-	14
+O86 Outr infecc puerperais	-	-	-	1	-	-	-	-	-	-	1	-	2
+O87 Complic venosas no puerperio	1	1	-	1	2	-	-	-	-	-	-	-	5
+O88 Embolia orig obstetrica	-	1	1	2	-	-	2	-	-	-	3	-	9
+O90 Complic do puerperio NCOP	-	1	-	-	2	-	-	-	1	-	-	1	5
+O95 Morte obstetrica de causa NE	-	-	1	-	-	1	-	1	-	-	1	1	5
+O98 Doen inf paras mat COP compl grav part puerp	-	1	2	13	1	3	3	3	1	-	-	2	29
+O99 Outr doenc mat COP compl grav parto puerp	1	2	2	17	5	2	-	1	2	-	4	1	37
