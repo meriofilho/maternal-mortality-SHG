@@ -8,7 +8,7 @@ CID-10 considerados: **O10, O11, O13, O14, O15 e O16**.
 
 ## Autores
 
-- Susana Silva Lima
+- **Susana Silva Lima**
 - Rosa Maria do Rego Lima
 - **Romério de Oliveira Lima Filho** — responsável pela análise
 - Mara Regina Pereira Viana Damasceno Feitosa
