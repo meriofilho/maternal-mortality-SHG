@@ -658,6 +658,110 @@ salvar_tabela(agregado, "rmm_shg_cocais_vs_resto_agregado")
 é a razão de taxas Cocais ÷ Resto do Estado (< 1 = Cocais com RMM-SHG
 menor; intervalo cruzando 1 = diferença não significativa a 5%).*
 
+## 18. Óbitos maternos por Região de Saúde: panorama completo
+
+*Contexto adicional: como a SHG se compara entre TODAS as 12 Regiões de
+Saúde do Piauí, não só Cocais — óbitos maternos de todas as causas por
+região e a fração que é SHG em cada uma.*
+
+```{r regiao-leitura}
+obitos_regiao <- read_excel(arq_graf, sheet = "Percentual de MM", skip = 3) %>%
+  rename(regiao = 1) %>%
+  filter(!is.na(regiao), regiao != "Total", !is.na(Total)) %>%
+  transmute(regiao = str_trim(regiao),
+            obitos_totais = as.numeric(Total),
+            pct_do_estado = as.numeric(`%`))
+
+obitos_regiao
+```
+
+```{r regiao-figura-total}
+fig11 <- obitos_regiao %>%
+  mutate(regiao = fct_reorder(regiao, obitos_totais),
+         destaque = if_else(regiao == "Cocais", "Cocais", "Demais regiões")) %>%
+  ggplot(aes(x = regiao, y = obitos_totais, fill = destaque)) +
+  geom_col(width = 0.65, show.legend = FALSE) +
+  geom_text(aes(label = paste0(obitos_totais, " (", round(pct_do_estado, 1), "%)")),
+            hjust = -0.1, size = 3.1, family = fonte_base) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(limits = c(0, max(obitos_regiao$obitos_totais) * 1.25)) +
+  scale_fill_manual(values = c("Cocais" = cor_cocais, "Demais regiões" = cor_estado)) +
+  labs(
+    title = "Óbitos maternos (todas as causas) por Região de Saúde",
+    subtitle = "Piauí, 2019–2024 (n = 235)",
+    x = NULL, y = "Número de óbitos"
+  ) +
+  tema_artigo
+
+fig11
+salvar_figura(fig11, "fig11_obitos_totais_por_regiao", altura = 8)
+salvar_tabela(obitos_regiao, "obitos_totais_por_regiao")
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS. Entre Rios concentra 31,5% dos
+óbitos maternos do estado porque inclui Teresina, a capital.*
+
+```{r regiao-shg}
+# Óbitos por SHG em CADA uma das 12 Regiões de Saúde (não só Cocais) -
+# usa a tabela já lida na Seção 17 (shg_regiao)
+shg_por_regiao <- shg_regiao %>%
+  select(-cid, -rotulo, -Total) %>%
+  summarise(across(everything(), sum)) %>%
+  pivot_longer(everything(), names_to = "regiao_cod", values_to = "obitos_shg") %>%
+  mutate(regiao = str_remove(regiao_cod, "^\\d+\\s+")) %>%
+  select(regiao, obitos_shg)
+
+comparacao_regional <- obitos_regiao %>%
+  left_join(shg_por_regiao, by = "regiao") %>%
+  mutate(pct_shg_na_regiao = round(obitos_shg / obitos_totais * 100, 1)) %>%
+  arrange(desc(obitos_totais))
+
+comparacao_regional
+salvar_tabela(comparacao_regional, "comparacao_regional_shg")
+```
+
+```{r regiao-figura-shg}
+fig12 <- comparacao_regional %>%
+  mutate(regiao = fct_reorder(regiao, obitos_shg),
+         destaque = if_else(regiao == "Cocais", "Cocais", "Demais regiões")) %>%
+  ggplot(aes(x = regiao, y = obitos_shg, fill = destaque)) +
+  geom_col(width = 0.65, show.legend = FALSE) +
+  geom_text(aes(label = paste0(obitos_shg, " de ", obitos_totais, " óbitos (", pct_shg_na_regiao, "%)")),
+            hjust = -0.1, size = 3, family = fonte_base) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(limits = c(0, max(comparacao_regional$obitos_shg) * 1.9)) +
+  scale_fill_manual(values = c("Cocais" = cor_cocais, "Demais regiões" = cor_estado)) +
+  labs(
+    title = "Óbitos por SHG por Região de Saúde",
+    subtitle = "Piauí, 2019–2024 (n = 62 óbitos por SHG)",
+    x = NULL, y = "Número de óbitos por SHG"
+  ) +
+  tema_artigo
+
+fig12
+salvar_figura(fig12, "fig12_shg_por_regiao", altura = 8)
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS (consulta adicional por Região de Saúde × CID-10, ver Seção 17). O rótulo "X de Y óbitos (Z%)" mostra óbitos por SHG (X) sobre o total de óbitos maternos DAQUELA região (Y) — cada região tem um denominador diferente, então uma barra menor pode ter percentual maior que uma barra maior (ex.: Vale do Canindé, 3 de 16 = 18,8%, é proporcionalmente maior que Entre Rios, 13 de 74 = 17,6%, mesmo com menos óbitos).*
+
+```{r regiao-teste}
+# A SHG está distribuída entre as regiões na mesma proporção que a
+# mortalidade materna geral, ou alguma região tem peso desproporcional?
+mat_regiao <- comparacao_regional %>%
+  transmute(SHG = obitos_shg, Não_SHG = obitos_totais - obitos_shg) %>%
+  as.matrix()
+rownames(mat_regiao) <- comparacao_regional$regiao
+
+teste_regiao <- tryCatch(
+  fisher.test(mat_regiao),
+  error = function(e) fisher.test(mat_regiao, simulate.p.value = TRUE, B = 100000)
+)
+teste_regiao
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS. H0: a fração de óbitos que é SHG é
+igual em todas as regiões (teste exato de Fisher, tabela 12 × 2).*
+
 ```{r conclusao, include=FALSE}
 message("Concluído. Figuras em '", dir_figuras, "/' e tabelas em '", dir_tabelas, "/'.")
 ```

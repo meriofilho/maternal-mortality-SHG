@@ -33,6 +33,8 @@ Susana Silva LimaRosa Maria do Rego LimaRomério de Oliveira Lima Filho
   confiança](#16-tendência-temporal-testes-formais-e-intervalos-de-confiança)
 - [17. SHG na Região dos Cocais: RMM específica e comparação com o
   Estado](#17-shg-na-região-dos-cocais-rmm-específica-e-comparação-com-o-estado)
+- [18. Óbitos maternos por Região de Saúde: panorama
+  completo](#18-óbitos-maternos-por-região-de-saúde-panorama-completo)
 
 ## Sobre esta análise
 
@@ -927,3 +929,172 @@ salvar_tabela(agregado, "rmm_shg_cocais_vs_resto_agregado")
 teste é a razão de taxas Cocais ÷ Resto do Estado (\< 1 = Cocais com
 RMM-SHG menor; intervalo cruzando 1 = diferença não significativa a
 5%).*
+
+## 18. Óbitos maternos por Região de Saúde: panorama completo
+
+*Contexto adicional: como a SHG se compara entre TODAS as 12 Regiões de
+Saúde do Piauí, não só Cocais — óbitos maternos de todas as causas por
+região e a fração que é SHG em cada uma.*
+
+``` r
+obitos_regiao <- read_excel(arq_graf, sheet = "Percentual de MM", skip = 3) %>%
+  rename(regiao = 1) %>%
+  filter(!is.na(regiao), regiao != "Total", !is.na(Total)) %>%
+  transmute(regiao = str_trim(regiao),
+            obitos_totais = as.numeric(Total),
+            pct_do_estado = as.numeric(`%`))
+
+obitos_regiao
+```
+
+<div class="kable-table">
+
+| regiao                          | obitos_totais | pct_do_estado |
+|:--------------------------------|--------------:|--------------:|
+| Carnaubais                      |            11 |      4.680851 |
+| Chapada das Mangabeiras         |            21 |      8.936170 |
+| Cocais                          |            23 |      9.787234 |
+| Entre Rios                      |            74 |     31.489362 |
+| Planície Litorânea              |            24 |     10.212766 |
+| Serra da Capivara               |            14 |      5.957447 |
+| Tabuleiros do Alto Parnaíba     |             7 |      2.978723 |
+| Vale do Canindé                 |            16 |      6.808511 |
+| Vale do Rio Guaribas            |            12 |      5.106383 |
+| Vale do Sambito                 |             6 |      2.553192 |
+| Vale dos Rios Piauí e Itaueiras |            18 |      7.659574 |
+| Chapada Vale do Rio Itaim       |             9 |      3.829787 |
+
+</div>
+
+``` r
+fig11 <- obitos_regiao %>%
+  mutate(regiao = fct_reorder(regiao, obitos_totais),
+         destaque = if_else(regiao == "Cocais", "Cocais", "Demais regiões")) %>%
+  ggplot(aes(x = regiao, y = obitos_totais, fill = destaque)) +
+  geom_col(width = 0.65, show.legend = FALSE) +
+  geom_text(aes(label = paste0(obitos_totais, " (", round(pct_do_estado, 1), "%)")),
+            hjust = -0.1, size = 3.1, family = fonte_base) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(limits = c(0, max(obitos_regiao$obitos_totais) * 1.25)) +
+  scale_fill_manual(values = c("Cocais" = cor_cocais, "Demais regiões" = cor_estado)) +
+  labs(
+    title = "Óbitos maternos (todas as causas) por Região de Saúde",
+    subtitle = "Piauí, 2019–2024 (n = 235)",
+    x = NULL, y = "Número de óbitos"
+  ) +
+  tema_artigo
+
+fig11
+```
+
+![](analise_shg_piaui_files/figure-gfm/regiao-figura-total-1.png)<!-- -->
+
+``` r
+salvar_figura(fig11, "fig11_obitos_totais_por_regiao", altura = 8)
+salvar_tabela(obitos_regiao, "obitos_totais_por_regiao")
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS. Entre Rios concentra 31,5% dos
+óbitos maternos do estado porque inclui Teresina, a capital.*
+
+``` r
+# Óbitos por SHG em CADA uma das 12 Regiões de Saúde (não só Cocais) -
+# usa a tabela já lida na Seção 17 (shg_regiao)
+shg_por_regiao <- shg_regiao %>%
+  select(-cid, -rotulo, -Total) %>%
+  summarise(across(everything(), sum)) %>%
+  pivot_longer(everything(), names_to = "regiao_cod", values_to = "obitos_shg") %>%
+  mutate(regiao = str_remove(regiao_cod, "^\\d+\\s+")) %>%
+  select(regiao, obitos_shg)
+
+comparacao_regional <- obitos_regiao %>%
+  left_join(shg_por_regiao, by = "regiao") %>%
+  mutate(pct_shg_na_regiao = round(obitos_shg / obitos_totais * 100, 1)) %>%
+  arrange(desc(obitos_totais))
+
+comparacao_regional
+```
+
+<div class="kable-table">
+
+| regiao | obitos_totais | pct_do_estado | obitos_shg | pct_shg_na_regiao |
+|:---|---:|---:|---:|---:|
+| Entre Rios | 74 | 31.489362 | 13 | 17.6 |
+| Planície Litorânea | 24 | 10.212766 | 6 | 25.0 |
+| Cocais | 23 | 9.787234 | 5 | 21.7 |
+| Chapada das Mangabeiras | 21 | 8.936170 | 8 | 38.1 |
+| Vale dos Rios Piauí e Itaueiras | 18 | 7.659574 | 3 | 16.7 |
+| Vale do Canindé | 16 | 6.808511 | 3 | 18.8 |
+| Serra da Capivara | 14 | 5.957447 | 4 | 28.6 |
+| Vale do Rio Guaribas | 12 | 5.106383 | 5 | 41.7 |
+| Carnaubais | 11 | 4.680851 | 5 | 45.5 |
+| Chapada Vale do Rio Itaim | 9 | 3.829787 | 4 | 44.4 |
+| Tabuleiros do Alto Parnaíba | 7 | 2.978723 | 2 | 28.6 |
+| Vale do Sambito | 6 | 2.553192 | 4 | 66.7 |
+
+</div>
+
+``` r
+salvar_tabela(comparacao_regional, "comparacao_regional_shg")
+```
+
+``` r
+fig12 <- comparacao_regional %>%
+  mutate(regiao = fct_reorder(regiao, obitos_shg),
+         destaque = if_else(regiao == "Cocais", "Cocais", "Demais regiões")) %>%
+  ggplot(aes(x = regiao, y = obitos_shg, fill = destaque)) +
+  geom_col(width = 0.65, show.legend = FALSE) +
+  geom_text(aes(label = paste0(obitos_shg, " de ", obitos_totais, " óbitos (", pct_shg_na_regiao, "%)")),
+            hjust = -0.1, size = 3, family = fonte_base) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(limits = c(0, max(comparacao_regional$obitos_shg) * 1.9)) +
+  scale_fill_manual(values = c("Cocais" = cor_cocais, "Demais regiões" = cor_estado)) +
+  labs(
+    title = "Óbitos por SHG por Região de Saúde",
+    subtitle = "Piauí, 2019–2024 (n = 62 óbitos por SHG)",
+    x = NULL, y = "Número de óbitos por SHG"
+  ) +
+  tema_artigo
+
+fig12
+```
+
+![](analise_shg_piaui_files/figure-gfm/regiao-figura-shg-1.png)<!-- -->
+
+``` r
+salvar_figura(fig12, "fig12_shg_por_regiao", altura = 8)
+```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS (consulta adicional por Região de
+Saúde × CID-10, ver Seção 17). O rótulo “X de Y óbitos (Z%)” mostra
+óbitos por SHG (X) sobre o total de óbitos maternos DAQUELA região (Y) —
+cada região tem um denominador diferente, então uma barra menor pode ter
+percentual maior que uma barra maior (ex.: Vale do Canindé, 3 de 16 =
+18,8%, é proporcionalmente maior que Entre Rios, 13 de 74 = 17,6%, mesmo
+com menos óbitos).*
+
+``` r
+# A SHG está distribuída entre as regiões na mesma proporção que a
+# mortalidade materna geral, ou alguma região tem peso desproporcional?
+mat_regiao <- comparacao_regional %>%
+  transmute(SHG = obitos_shg, Não_SHG = obitos_totais - obitos_shg) %>%
+  as.matrix()
+rownames(mat_regiao) <- comparacao_regional$regiao
+
+teste_regiao <- tryCatch(
+  fisher.test(mat_regiao),
+  error = function(e) fisher.test(mat_regiao, simulate.p.value = TRUE, B = 100000)
+)
+teste_regiao
+```
+
+    ## 
+    ##  Fisher's Exact Test for Count Data with simulated p-value (based on
+    ##  1e+05 replicates)
+    ## 
+    ## data:  mat_regiao
+    ## p-value = 0.1214
+    ## alternative hypothesis: two.sided
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS. H0: a fração de óbitos que é SHG é
+igual em todas as regiões (teste exato de Fisher, tabela 12 × 2).*
