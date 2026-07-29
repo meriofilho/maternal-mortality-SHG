@@ -64,6 +64,11 @@
   .eyebrow .meta{ color:var(--muted); font-size:12px; }
   h1{ font-size:32px; line-height:1.15; margin-bottom:8px; }
   .subtitle{ font-size:16px; color:var(--ink-soft); max-width:70ch; line-height:1.5; }
+  .authors{ font-size:13px; color:var(--ink-soft); margin-top:14px; line-height:1.6; }
+  .authors .name{ color:var(--ink); }
+  .authors .lead{ color:var(--accent); font-weight:700; }
+  .authors .role{ color:var(--muted); font-size:11.5px; }
+  .authors .sep{ color:var(--line); margin:0 2px; }
 
   section{ margin-top:52px; }
   .section-head{ display:flex; align-items:baseline; gap:12px; margin-bottom:6px; }
@@ -88,6 +93,9 @@
   .track{ background:var(--line); border-radius:4px; height:14px; position:relative; overflow:hidden; }
   .fill{ height:100%; border-radius:4px; }
   .barrow .rval{ font-size:12.5px; color:var(--ink); text-align:right; font-weight:600; }
+  .barlist.regional .barrow{ grid-template-columns:190px 1fr 150px; }
+  .barlist.regional .rlabel{ font-size:12px; }
+  .barlist.regional .rval{ font-size:11.5px; font-weight:600; }
 
   .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
   @media (max-width:640px){ .grid2{ grid-template-columns:1fr; } .stats{ grid-template-columns:repeat(2,1fr);} }
@@ -137,6 +145,9 @@
     </div>
     <h1>Óbitos maternos por Síndromes Hipertensivas na Gestação</h1>
     <p class="subtitle">Perfil epidemiológico no Estado do Piauí e comparação com a Região de Saúde dos Cocais, 2019–2024 (CID-10: O10, O11, O13, O14, O15, O16).</p>
+    <p class="authors">
+      <span class="name">Susana Silva Lima</span><span class="sep">·</span><span class="name">Rosa Maria do Rego Lima</span><span class="sep">·</span><span class="lead">Romério de Oliveira Lima Filho</span> <span class="role">(responsável pela análise de dados)</span><span class="sep">·</span><span class="name">Mara Regina Pereira Viana Damasceno Feitosa</span>
+    </p>
   </header>
 
   <!-- HEADLINE STATS -->
@@ -361,9 +372,60 @@
     </div>
   </section>
 
-  <!-- SECTION 5: TESTES DE ASSOCIAÇÃO -->
+  <!-- SECTION 5: PANORAMA REGIONAL COMPLETO -->
   <section>
-    <div class="section-head"><span class="section-num">05</span><h2>O perfil da SHG é diferente do perfil das outras causas maternas?</h2></div>
+    <div class="section-head"><span class="section-num">05</span><h2>Panorama completo: as 12 Regiões de Saúde do Piauí</h2></div>
+    <p class="section-desc">Contexto adicional: como a SHG se compara entre todas as regiões, não só Cocais. À esquerda, óbitos maternos de todas as causas; à direita, quantos desses óbitos foram por SHG em cada região.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Óbitos maternos (todas as causas)</h3>
+        <div class="sub">Piauí, 2019–2024 (n = 235) — % do total do estado</div>
+        <div class="barlist regional">
+          <div class="barrow"><span class="rlabel">Entre Rios</span><div class="track"><div class="fill" style="width:100%; background:var(--tealE);"></div></div><span class="rval">74 (31,5%)</span></div>
+          <div class="barrow"><span class="rlabel">Planície Litorânea</span><div class="track"><div class="fill" style="width:32.4%; background:var(--tealD);"></div></div><span class="rval">24 (10,2%)</span></div>
+          <div class="barrow"><span class="rlabel">Cocais</span><div class="track"><div class="fill" style="width:31.1%; background:var(--accent-2);"></div></div><span class="rval">23 (9,8%)</span></div>
+          <div class="barrow"><span class="rlabel">Chapada das Mangabeiras</span><div class="track"><div class="fill" style="width:28.4%; background:var(--tealD);"></div></div><span class="rval">21 (8,9%)</span></div>
+          <div class="barrow"><span class="rlabel">V. dos Rios PI e Itaueiras</span><div class="track"><div class="fill" style="width:24.3%; background:var(--tealD);"></div></div><span class="rval">18 (7,7%)</span></div>
+          <div class="barrow"><span class="rlabel">Vale do Canindé</span><div class="track"><div class="fill" style="width:21.6%; background:var(--tealD);"></div></div><span class="rval">16 (6,8%)</span></div>
+          <div class="barrow"><span class="rlabel">Serra da Capivara</span><div class="track"><div class="fill" style="width:18.9%; background:var(--tealD);"></div></div><span class="rval">14 (6,0%)</span></div>
+          <div class="barrow"><span class="rlabel">Vale do Rio Guaribas</span><div class="track"><div class="fill" style="width:16.2%; background:var(--tealD);"></div></div><span class="rval">12 (5,1%)</span></div>
+          <div class="barrow"><span class="rlabel">Carnaubais</span><div class="track"><div class="fill" style="width:14.9%; background:var(--tealD);"></div></div><span class="rval">11 (4,7%)</span></div>
+          <div class="barrow"><span class="rlabel">Chapada Vale do Rio Itaim</span><div class="track"><div class="fill" style="width:12.2%; background:var(--tealD);"></div></div><span class="rval">9 (3,8%)</span></div>
+          <div class="barrow"><span class="rlabel">Tabuleiros do Alto Parnaíba</span><div class="track"><div class="fill" style="width:9.5%; background:var(--tealD);"></div></div><span class="rval">7 (3,0%)</span></div>
+          <div class="barrow"><span class="rlabel">Vale do Sambito</span><div class="track"><div class="fill" style="width:8.1%; background:var(--tealD);"></div></div><span class="rval">6 (2,6%)</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Óbitos por SHG</h3>
+        <div class="sub">Piauí, 2019–2024 (n = 62) — "óbitos SHG de óbitos maternos da região"</div>
+        <div class="barlist regional">
+          <div class="barrow"><span class="rlabel">Entre Rios</span><div class="track"><div class="fill" style="width:100%; background:var(--tealE);"></div></div><span class="rval">13 de 74 (17,6%)</span></div>
+          <div class="barrow"><span class="rlabel">Chapada das Mangabeiras</span><div class="track"><div class="fill" style="width:61.5%; background:var(--tealD);"></div></div><span class="rval">8 de 21 (38,1%)</span></div>
+          <div class="barrow"><span class="rlabel">Planície Litorânea</span><div class="track"><div class="fill" style="width:46.2%; background:var(--tealD);"></div></div><span class="rval">6 de 24 (25,0%)</span></div>
+          <div class="barrow"><span class="rlabel">Vale do Rio Guaribas</span><div class="track"><div class="fill" style="width:38.5%; background:var(--tealD);"></div></div><span class="rval">5 de 12 (41,7%)</span></div>
+          <div class="barrow"><span class="rlabel">Cocais</span><div class="track"><div class="fill" style="width:38.5%; background:var(--accent-2);"></div></div><span class="rval">5 de 23 (21,7%)</span></div>
+          <div class="barrow"><span class="rlabel">Carnaubais</span><div class="track"><div class="fill" style="width:38.5%; background:var(--tealD);"></div></div><span class="rval">5 de 11 (45,5%)</span></div>
+          <div class="barrow"><span class="rlabel">Vale do Sambito</span><div class="track"><div class="fill" style="width:30.8%; background:var(--tealD);"></div></div><span class="rval">4 de 6 (66,7%)</span></div>
+          <div class="barrow"><span class="rlabel">Serra da Capivara</span><div class="track"><div class="fill" style="width:30.8%; background:var(--tealD);"></div></div><span class="rval">4 de 14 (28,6%)</span></div>
+          <div class="barrow"><span class="rlabel">Chapada Vale do Rio Itaim</span><div class="track"><div class="fill" style="width:30.8%; background:var(--tealD);"></div></div><span class="rval">4 de 9 (44,4%)</span></div>
+          <div class="barrow"><span class="rlabel">V. dos Rios PI e Itaueiras</span><div class="track"><div class="fill" style="width:23.1%; background:var(--tealD);"></div></div><span class="rval">3 de 18 (16,7%)</span></div>
+          <div class="barrow"><span class="rlabel">Vale do Canindé</span><div class="track"><div class="fill" style="width:23.1%; background:var(--tealD);"></div></div><span class="rval">3 de 16 (18,8%)</span></div>
+          <div class="barrow"><span class="rlabel">Tabuleiros do Alto Parnaíba</span><div class="track"><div class="fill" style="width:15.4%; background:var(--tealD);"></div></div><span class="rval">2 de 7 (28,6%)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="mark">＊</span>
+      <p><strong>Leitura:</strong> Entre Rios concentra quase um terço dos óbitos maternos do estado (31,5%) porque inclui Teresina, a capital — não é comparável em tamanho às demais regiões. Olhando a <strong>fração de SHG dentro de cada região</strong> (óbitos SHG ÷ óbitos maternos da própria região), Cocais fica em posição intermediária (21,7%): não é a região com maior nem com menor peso da SHG. Vale do Sambito chama atenção (66,7%), mas com só 6 óbitos maternos no total, esse percentual é instável — o teste de Fisher confirma que <strong>nenhuma região tem peso de SHG estatisticamente desproporcional</strong> em relação às demais (p = 0,122).</p>
+    </div>
+  </section>
+
+  <!-- SECTION 6: TESTES DE ASSOCIAÇÃO -->
+  <section>
+    <div class="section-head"><span class="section-num">06</span><h2>O perfil da SHG é diferente do perfil das outras causas maternas?</h2></div>
     <p class="section-desc">Teste exato de Fisher comparando quem morreu por SHG com quem morreu por outra causa materna no mesmo período, em cada variável sociodemográfica (H0: a distribuição não difere entre os dois grupos).</p>
 
     <div class="card">
@@ -392,7 +454,7 @@
 
   <!-- APPENDIX TABLE -->
   <section>
-    <div class="section-head"><span class="section-num">06</span><h2>Tabela-síntese</h2></div>
+    <div class="section-head"><span class="section-num">07</span><h2>Tabela-síntese</h2></div>
     <p class="section-desc">Óbitos por SHG segundo categoria CID-10 e ano — Piauí, 2019–2024.</p>
     <div class="card">
       <div class="tablewrap">
