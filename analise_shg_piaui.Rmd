@@ -57,16 +57,13 @@ fonte_base <- "Roboto"
 
 tema_artigo <- theme_minimal(base_size = 12, base_family = fonte_base) +
   theme(
-    plot.title = element_text(face = "bold", size = 13, hjust = 0, lineheight = 1.1),
+    plot.title = element_text(face = "bold", size = 12, hjust = 0),
     plot.subtitle = element_text(color = "grey35", size = 10),
-    plot.caption = element_text(color = "grey45", size = 8, hjust = 0),
     axis.title = element_text(size = 10),
     panel.grid = element_blank(),
     legend.position = "top",
     legend.title = element_blank()
   )
-
-quebrar_titulo <- function(x, largura = 45) str_wrap(x, width = largura)
 ```
 
 ## 3. Caminhos, pastas de saída e códigos CID-10 de SHG
@@ -118,7 +115,9 @@ ler_tabela_cid <- function(caminho, aba, skip = 3) {
                   ~ as.numeric(str_replace(as.character(.), "^-$", "0"))))
 }
 
-# Soma as categorias de SHG em cada dimensão sociodemográfica (perfil)
+# Soma as categorias de SHG em cada dimensão sociodemográfica (perfil).
+# fct_rev(fct_inorder()) mantém a ordem crescente das colunas de cima para
+# baixo depois do coord_flip (ex.: "10 a 14 anos" no topo, "40 a 49" embaixo)
 perfil_resumo <- function(tabela, nome_dimensao) {
   tabela %>%
     select(-cid, -rotulo, -Total) %>%
@@ -126,26 +125,38 @@ perfil_resumo <- function(tabela, nome_dimensao) {
     pivot_longer(everything(), names_to = nome_dimensao, values_to = "n") %>%
     mutate(
       pct = n / sum(n) * 100,
-      !!nome_dimensao := fct_inorder(.data[[nome_dimensao]])
+      !!nome_dimensao := fct_rev(fct_inorder(.data[[nome_dimensao]]))
     )
 }
 
-grafico_perfil <- function(dados, dimensao, titulo, cor_barra = cor_estado) {
-  ggplot(dados, aes(x = .data[[dimensao]], y = n)) +
+# Ordena por magnitude (maior no topo), mas força qualquer categoria
+# residual "Outro/Outros..." para a última barra, mesmo que tenha valor alto
+ordenar_outros_por_ultimo <- function(categoria, n) {
+  eh_outro <- str_detect(as.character(categoria), regex("^outr[oa]s?$", ignore_case = TRUE))
+  fct_reorder(categoria, n - ifelse(eh_outro, 1e6, 0))
+}
+
+# remover_zeros = TRUE tira do GRÁFICO as categorias com 0 óbitos (a tabela
+# exportada continua com todas as categorias, zeros incluídos)
+grafico_perfil <- function(dados, dimensao, titulo, cor_barra = cor_estado,
+                            remover_zeros = TRUE) {
+  dados_grafico <- if (remover_zeros) filter(dados, n > 0) else dados
+
+  ggplot(dados_grafico, aes(x = .data[[dimensao]], y = n)) +
     geom_col(fill = cor_barra, width = 0.65) +
     geom_text(aes(label = paste0(n, " (", round(pct, 1), "%)")),
               hjust = -0.1, size = 3.2, family = fonte_base) +
     coord_flip(clip = "off") +
-    scale_y_continuous(limits = c(0, max(dados$n) * 1.3)) +
-    labs(title = quebrar_titulo(titulo), subtitle = "Piauí, 2019–2024 (n = 62)",
-         x = NULL, y = "Número de óbitos",
-         caption = "Fonte: MS/SVSA/CGIAE - SIM/DATASUS.") +
+    scale_y_continuous(limits = c(0, max(dados_grafico$n) * 1.3)) +
+    labs(title = titulo, subtitle = "Piauí, 2019–2024 (n = 62)",
+         x = NULL, y = "Número de óbitos") +
     tema_artigo
 }
 
 # Salva cada figura em PNG (300dpi) e PDF vetorial (fonte Roboto embutida
-# via cairo_pdf) dentro de figuras/
-salvar_figura <- function(grafico, nome, largura = 16, altura = 10) {
+# via cairo_pdf) dentro de figuras/ — sem legenda de fonte embutida na
+# imagem (a citação da fonte fica como texto no corpo deste documento)
+salvar_figura <- function(grafico, nome, largura = 18, altura = 10) {
   ggsave(file.path(dir_figuras, paste0(nome, ".png")), grafico,
          width = largura, height = altura, units = "cm", dpi = 300)
   ggsave(file.path(dir_figuras, paste0(nome, ".pdf")), grafico,
@@ -197,7 +208,7 @@ dist_tipo <- shg_ano %>%
   arrange(desc(Total)) %>%
   mutate(
     pct = Total / sum(Total) * 100,
-    rotulo = fct_reorder(rotulo, Total)
+    rotulo = ordenar_outros_por_ultimo(rotulo, Total)
   )
 
 fig1 <- ggplot(dist_tipo, aes(x = rotulo, y = Total, fill = rotulo)) +
@@ -208,10 +219,9 @@ fig1 <- ggplot(dist_tipo, aes(x = rotulo, y = Total, fill = rotulo)) +
   scale_y_continuous(limits = c(0, max(dist_tipo$Total) * 1.25)) +
   scale_fill_manual(values = paleta_shg) +
   labs(
-    title = quebrar_titulo("Distribuição dos óbitos por tipo de síndrome hipertensiva"),
+    title = "Distribuição dos óbitos por tipo de síndrome hipertensiva",
     subtitle = "Piauí, 2019–2024 (n = 62)",
-    x = NULL, y = "Número de óbitos",
-    caption = "Fonte: MS/SVSA/CGIAE - SIM/DATASUS. O11 não teve registros no período."
+    x = NULL, y = "Número de óbitos"
   ) +
   tema_artigo
 
@@ -219,6 +229,8 @@ fig1
 salvar_figura(fig1, "fig1_distribuicao_tipo_shg")
 salvar_tabela(dist_tipo, "distribuicao_tipo")
 ```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS. O11 não teve registros no período.*
 
 ## 7. Figura 2 — Evolução temporal
 
@@ -241,10 +253,9 @@ fig2 <- ggplot(evolucao, aes(x = factor(ano), y = obitos_shg)) +
             vjust = 1.8, size = 3, color = "white", family = fonte_base) +
   scale_y_continuous(limits = c(0, max(evolucao$obitos_shg) * 1.2)) +
   labs(
-    title = quebrar_titulo("Evolução temporal dos óbitos por SHG"),
+    title = "Evolução temporal dos óbitos por SHG",
     subtitle = "Piauí, 2019–2024 — percentual em relação ao total de óbitos maternos do ano",
-    x = "Ano", y = "Número de óbitos por SHG",
-    caption = "Fonte: MS/SVSA/CGIAE - SIM/DATASUS."
+    x = "Ano", y = "Número de óbitos por SHG"
   ) +
   tema_artigo
 
@@ -252,6 +263,8 @@ fig2
 salvar_figura(fig2, "fig2_evolucao_temporal")
 salvar_tabela(evolucao, "evolucao_temporal")
 ```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS.*
 
 ## 8. Figura 3 — Perfil por faixa etária
 
@@ -266,19 +279,23 @@ salvar_figura(fig3, "fig3_faixa_etaria")
 salvar_tabela(perfil_faixa, "perfil_faixa_etaria")
 ```
 
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS.*
+
 ## 9. Figura 4 — Perfil por raça/cor
 
 *Objetivo específico: perfil epidemiológico (etnia/cor).*
 
 ```{r figura4}
 perfil_raca <- perfil_resumo(shg_raca_cor, "raca_cor") %>%
-  mutate(raca_cor = fct_reorder(raca_cor, n))
+  mutate(raca_cor = ordenar_outros_por_ultimo(raca_cor, n))
 fig4 <- grafico_perfil(perfil_raca, "raca_cor",
                         "Óbitos por SHG segundo raça/cor")
 fig4
 salvar_figura(fig4, "fig4_raca_cor")
 salvar_tabela(perfil_raca, "perfil_raca_cor")
 ```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS.*
 
 ## 10. Figura 5 — Perfil por escolaridade
 
@@ -293,19 +310,25 @@ salvar_figura(fig5, "fig5_escolaridade")
 salvar_tabela(perfil_escolaridade, "perfil_escolaridade")
 ```
 
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS.*
+
 ## 11. Figura 6 — Perfil por local de ocorrência
 
 *Objetivo específico: perfil epidemiológico (local de ocorrência).*
 
 ```{r figura6}
 perfil_local <- perfil_resumo(shg_local, "local") %>%
-  mutate(local = fct_reorder(local, n))
+  mutate(local = ordenar_outros_por_ultimo(local, n))
 fig6 <- grafico_perfil(perfil_local, "local",
                         "Óbitos por SHG segundo local de ocorrência")
 fig6
 salvar_figura(fig6, "fig6_local_ocorrencia")
 salvar_tabela(perfil_local, "perfil_local_ocorrencia")
 ```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS. Categorias sem nenhum registro
+(Ignorado, Via pública) ficam de fora do gráfico, mas continuam na
+tabela exportada.*
 
 ## 12. Figura 7 — Comparação RMM: Piauí x Região dos Cocais
 
@@ -323,10 +346,9 @@ fig7 <- ggplot(rmm_valor, aes(x = factor(ano), y = rmm, fill = area, group = are
   scale_fill_manual(values = c("Cocais" = cor_cocais, "Estado" = cor_estado)) +
   scale_y_continuous(expand = expansion(mult = c(0, 0.14))) +
   labs(
-    title = quebrar_titulo("Razão de Mortalidade Materna: Piauí x Região dos Cocais"),
+    title = "Razão de Mortalidade Materna: Piauí x Região dos Cocais",
     subtitle = "Por 100 mil nascidos vivos — todas as causas de óbito materno",
-    x = "Ano", y = "RMM (por 100 mil NV)",
-    caption = "Fonte: SIM e SINASC/DATASUS. RMM não é específica de SHG (ver limitação no texto)."
+    x = "Ano", y = "RMM (por 100 mil NV)"
   ) +
   tema_artigo
 
@@ -335,20 +357,24 @@ salvar_figura(fig7, "fig7_rmm_piaui_cocais")
 salvar_tabela(rmm_valor, "rmm_piaui_cocais")
 ```
 
+*Fonte: SIM e SINASC/DATASUS. RMM não é específica de SHG — ver observação acima.*
+
 ## 13. Figuras extras (material suplementar)
 
 Tipo de causa obstétrica e situação de investigação do óbito.
 
 ```{r figuras-extras}
 perfil_causa <- perfil_resumo(shg_causa_obst, "tipo_causa") %>%
-  mutate(tipo_causa = fct_reorder(tipo_causa, n))
+  mutate(tipo_causa = ordenar_outros_por_ultimo(tipo_causa, n))
+# remover_zeros = FALSE: mantém a barra de "não especificada" mesmo em 0%
 fig8 <- grafico_perfil(perfil_causa, "tipo_causa",
-                        "Óbitos por SHG segundo tipo de causa obstétrica")
+                        "Óbitos por SHG segundo tipo de causa obstétrica",
+                        remover_zeros = FALSE)
 fig8
 salvar_figura(fig8, "fig8_tipo_causa_obstetrica", altura = 6)
 
 perfil_investigado <- perfil_resumo(shg_investigado, "situacao") %>%
-  mutate(situacao = fct_reorder(situacao, n))
+  mutate(situacao = ordenar_outros_por_ultimo(situacao, n))
 fig9 <- grafico_perfil(perfil_investigado, "situacao",
                         "Óbitos por SHG segundo situação de investigação")
 fig9
@@ -357,6 +383,8 @@ salvar_figura(fig9, "fig9_situacao_investigacao", altura = 6)
 salvar_tabela(perfil_causa, "perfil_tipo_causa_obstetrica")
 salvar_tabela(perfil_investigado, "perfil_situacao_investigacao")
 ```
+
+*Fonte: MS/SVSA/CGIAE — SIM/DATASUS.*
 
 ## 14. Estatística descritiva
 
