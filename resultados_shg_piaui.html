@@ -88,6 +88,15 @@
   .card h3{ font-size:14px; font-family:ui-sans-serif,sans-serif; font-weight:600; color:var(--ink); margin-bottom:2px; }
   .card .sub{ font-size:12px; color:var(--muted); margin-bottom:16px; }
 
+  .result{ font-size:13.5px; color:var(--ink-soft); line-height:1.6; margin-top:14px; max-width:72ch; }
+  .result strong{ color:var(--ink); }
+  .result .lead{ color:var(--accent); font-weight:700; }
+
+  .ministat-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; }
+  .ministat{ flex:1; min-width:100px; text-align:center; background:var(--paper); border-radius:8px; padding:14px 8px; }
+  .ministat .v{ font-family:ui-serif,serif; font-size:22px; font-weight:600; color:var(--accent); line-height:1; }
+  .ministat .l{ font-size:10.5px; color:var(--muted); margin-top:5px; }
+
   .barlist{ display:flex; flex-direction:column; gap:10px; }
   .barrow{ display:grid; grid-template-columns:150px 1fr 64px; align-items:center; gap:10px; }
   .barrow .rlabel{ font-size:12.5px; color:var(--ink-soft); }
@@ -178,6 +187,8 @@
         <div class="barrow"><span class="rlabel">O16 — Hipert. materna NE</span><div class="track"><div class="fill" style="width:3%; background:var(--tealB);"></div></div><span class="rval">1 · 1,6%</span></div>
       </div>
     </div>
+
+    <p class="result"><span class="lead">Resultado:</span> a eclâmpsia (O15) foi isoladamente a causa mais frequente de óbito por SHG, respondendo por mais da metade dos casos (53,2%; IC95% 40,1–66,0%). Somada à hipertensão gestacional com proteinúria significativa (O14, 33,9%), essas duas categorias concentram <strong>87,1% dos óbitos por SHG</strong> do período — as formas mais graves da síndrome dominam amplamente o quadro. Hipertensão pré-existente (O10, 3,2%) e hipertensão materna não especificada (O16, 1,6%) foram raras, e nenhum óbito foi registrado sob O11.</p>
   </section>
 
   <!-- SECTION 1: PERFIL EPIDEMIOLÓGICO -->
@@ -232,6 +243,8 @@
         </div>
       </div>
     </div>
+
+    <p class="result"><span class="lead">Resultado:</span> a mortalidade por SHG concentra-se em mulheres adultas jovens — <strong>90,3% dos óbitos ocorreram entre 20 e 39 anos</strong>, com pico na faixa de 30–39 (53,2%). A maioria se autodeclarava parda (72,6%), refletindo a composição racial predominante do estado. Em escolaridade, 40,3% tinham de 8 a 11 anos de estudo (fundamental/médio incompleto), mas 11,3% dos registros não informaram essa variável. Praticamente todos os óbitos (93,5%) ocorreram em ambiente hospitalar — o que desloca a discussão de <em>acesso</em> ao sistema de saúde para a <em>qualidade e tempestividade</em> do cuidado obstétrico prestado, já que as mulheres chegaram a ser atendidas.</p>
   </section>
 
   <!-- SECTION 3: EVOLUÇÃO TEMPORAL -->
@@ -455,9 +468,62 @@
     </div>
   </section>
 
+  <!-- SECTION 7: MICRODADO -->
+  <section>
+    <div class="section-head"><span class="section-num">07</span><h2>Idade exata, sazonalidade e município (microdado do SIM)</h2></div>
+    <p class="section-desc">Enriquecimento adicional: em vez das tabelas agregadas do Tabnet, esta seção usa os registros individuais (Declaração de Óbito anonimizada) do SIM. Validamos que esse microdado reproduz exatamente os mesmos 62 óbitos usados no restante da análise.</p>
+
+    <div class="card">
+      <h3>Idade exata</h3>
+      <div class="sub">Piauí, 2019–2024 (n = 62) — não em faixas de 10 anos, idade real de cada óbito</div>
+      <div class="ministat-row">
+        <div class="ministat"><div class="v">30,1</div><div class="l">média (anos)</div></div>
+        <div class="ministat"><div class="v">31</div><div class="l">mediana (anos)</div></div>
+        <div class="ministat"><div class="v">14</div><div class="l">idade mínima</div></div>
+        <div class="ministat"><div class="v">42</div><div class="l">idade máxima</div></div>
+      </div>
+    </div>
+
+    <p class="result"><span class="lead">Resultado:</span> a idade das mulheres variou de <strong>14 a 42 anos</strong>, com média de 30,1 anos e mediana de 31 — coerente com a concentração em 30–39 anos já vista na Seção 02. A faixa "10 a 14 anos" identificada antes correspondia a uma única adolescente, com exatamente 14 anos.</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Sazonalidade</h3>
+        <div class="sub">Óbitos por mês, todos os anos agregados (n = 62)</div>
+        <div class="barlist">
+          <div class="barrow"><span class="rlabel">Janeiro</span><div class="track"><div class="fill" style="width:100%; background:var(--tealF);"></div></div><span class="rval">10 · 16,1%</span></div>
+          <div class="barrow"><span class="rlabel">Março</span><div class="track"><div class="fill" style="width:80%; background:var(--tealE);"></div></div><span class="rval">8 · 12,9%</span></div>
+          <div class="barrow"><span class="rlabel">Outubro</span><div class="track"><div class="fill" style="width:80%; background:var(--tealE);"></div></div><span class="rval">8 · 12,9%</span></div>
+          <div class="barrow"><span class="rlabel">Novembro</span><div class="track"><div class="fill" style="width:60%; background:var(--tealD);"></div></div><span class="rval">6 · 9,7%</span></div>
+          <div class="barrow"><span class="rlabel">Fevereiro</span><div class="track"><div class="fill" style="width:50%; background:var(--tealC);"></div></div><span class="rval">5 · 8,1%</span></div>
+          <div class="barrow"><span class="rlabel">Abril</span><div class="track"><div class="fill" style="width:50%; background:var(--tealC);"></div></div><span class="rval">5 · 8,1%</span></div>
+          <div class="barrow"><span class="rlabel">Jul. / Set.</span><div class="track"><div class="fill" style="width:40%; background:var(--tealC);"></div></div><span class="rval">4 cada · 6,5%</span></div>
+          <div class="barrow"><span class="rlabel">Mai. / Jun. / Ago. / Dez.</span><div class="track"><div class="fill" style="width:30%; background:var(--tealB);"></div></div><span class="rval">3 cada · 4,8%</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Município exato — Região dos Cocais</h3>
+        <div class="sub">Onde ocorreram os 5 óbitos por SHG da região (Seção 04)</div>
+        <div class="barlist">
+          <div class="barrow"><span class="rlabel">Esperantina</span><div class="track"><div class="fill" style="width:100%; background:var(--accent-2);"></div></div><span class="rval">1</span></div>
+          <div class="barrow"><span class="rlabel">Joaquim Pires</span><div class="track"><div class="fill" style="width:100%; background:var(--accent-2);"></div></div><span class="rval">1</span></div>
+          <div class="barrow"><span class="rlabel">Milton Brandão</span><div class="track"><div class="fill" style="width:100%; background:var(--accent-2);"></div></div><span class="rval">1</span></div>
+          <div class="barrow"><span class="rlabel">Pedro II</span><div class="track"><div class="fill" style="width:100%; background:var(--accent-2);"></div></div><span class="rval">1</span></div>
+          <div class="barrow"><span class="rlabel">São João da Fronteira</span><div class="track"><div class="fill" style="width:100%; background:var(--accent-2);"></div></div><span class="rval">1</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="mark">＊</span>
+      <p><strong>Leitura:</strong> janeiro (10 óbitos) e outubro/março (8 cada) chamam atenção, mas o teste qui-quadrado <strong>não confirma desvio estatisticamente significativo</strong> de uma distribuição uniforme entre os meses (p = 0,369) — com 62 eventos espalhados em 12 meses (~5,2/mês esperado), essa variação é compatível com oscilação aleatória. No nível municipal, Teresina (8 óbitos) e Parnaíba (4) concentram os maiores números — esperado, por serem os municípios mais populosos —, mas os demais 43 municípios com pelo menos um óbito têm no máximo 2 casos cada. Na Região dos Cocais, os 5 óbitos por SHG ocorreram em <strong>5 municípios diferentes</strong>, sem nenhuma concentração local.</p>
+    </div>
+  </section>
+
   <!-- APPENDIX TABLE -->
   <section>
-    <div class="section-head"><span class="section-num">07</span><h2>Tabela-síntese</h2></div>
+    <div class="section-head"><span class="section-num">08</span><h2>Tabela-síntese</h2></div>
     <p class="section-desc">Óbitos por SHG segundo categoria CID-10 e ano — Piauí, 2019–2024.</p>
     <div class="card">
       <div class="tablewrap">
