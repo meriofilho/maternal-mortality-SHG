@@ -23,11 +23,17 @@ de Informações sobre Nascidos Vivos (SINASC), obtidos via DATASUS/Tabnet
 
 ```
 ├── analise_shg_piaui.Rmd          # script de análise (R Markdown)
-├── analise_shg_piaui.html         # relatório já renderizado (abrir no navegador)
+├── analise_shg_piaui.html         # relatório técnico renderizado (código + figuras)
+├── analise_shg_piaui.md           # mesmo relatório em Markdown puro (visualização no GitHub)
+├── analise_shg_piaui_files/       # figuras usadas pelo .md
+├── resultados_shg_piaui.html      # relatório só de resultados, para colaboradores (sem código)
 ├── dados/                         # planilhas originais baixadas do Tabnet
 ├── figuras/                       # gráficos exportados (PNG 300dpi + PDF vetorial)
 └── tabelas/                       # tabelas de apoio exportadas (CSV, ; e UTF-8/BOM)
 ```
+
+O `.Rmd` tem dois formatos de saída no cabeçalho YAML — no RStudio, o botão
+**Knit** deixa escolher entre "HTML" e "GitHub Document (Markdown)".
 
 ## Como reproduzir a análise
 
