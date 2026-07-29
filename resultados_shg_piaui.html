@@ -66,9 +66,10 @@
   .subtitle{ font-size:16px; color:var(--ink-soft); max-width:70ch; line-height:1.5; }
   .authors{ font-size:13px; color:var(--ink-soft); margin-top:14px; line-height:1.6; }
   .authors .name{ color:var(--ink); }
-  .authors .lead{ color:var(--accent); font-weight:700; }
-  .authors .role{ color:var(--muted); font-size:11.5px; }
+  .authors .name.lead{ font-weight:700; }
   .authors .sep{ color:var(--line); margin:0 2px; }
+  .lead-role{ font-size:12px; color:var(--muted); margin-top:4px; }
+  .lead-role strong{ color:var(--accent); font-weight:700; }
 
   section{ margin-top:52px; }
   .section-head{ display:flex; align-items:baseline; gap:12px; margin-bottom:6px; }
@@ -116,6 +117,7 @@
   thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--line); }
   tbody td{ padding:8px 10px; border-bottom:1px solid var(--line); color:var(--ink-soft); }
   tbody tr:last-child td{ border-bottom:none; font-weight:700; color:var(--ink); }
+  table.no-emphasis tbody tr:last-child td{ font-weight:400; color:var(--ink-soft); border-bottom:1px solid var(--line); }
   td.num, th.num{ text-align:right; font-variant-numeric:tabular-nums; }
   .tablewrap{ overflow-x:auto; }
 
@@ -146,8 +148,9 @@
     <h1>Óbitos maternos por Síndromes Hipertensivas na Gestação</h1>
     <p class="subtitle">Perfil epidemiológico no Estado do Piauí e comparação com a Região de Saúde dos Cocais, 2019–2024 (CID-10: O10, O11, O13, O14, O15, O16).</p>
     <p class="authors">
-      <span class="name">Susana Silva Lima</span><span class="sep">·</span><span class="name">Rosa Maria do Rego Lima</span><span class="sep">·</span><span class="lead">Romério de Oliveira Lima Filho</span> <span class="role">(responsável pela análise de dados)</span><span class="sep">·</span><span class="name">Mara Regina Pereira Viana Damasceno Feitosa</span>
+      <span class="name lead">Susana Silva Lima</span><span class="sep">·</span><span class="name">Rosa Maria do Rego Lima</span><span class="sep">·</span><span class="name">Romério de Oliveira Lima Filho</span><span class="sep">·</span><span class="name">Mara Regina Pereira Viana Damasceno Feitosa</span>
     </p>
+    <p class="lead-role">Responsável pela análise de dados: <strong>Romério de Oliveira Lima Filho</strong></p>
   </header>
 
   <!-- HEADLINE STATS -->
@@ -384,7 +387,7 @@
         <div class="barlist regional">
           <div class="barrow"><span class="rlabel">Entre Rios</span><div class="track"><div class="fill" style="width:100%; background:var(--tealE);"></div></div><span class="rval">74 (31,5%)</span></div>
           <div class="barrow"><span class="rlabel">Planície Litorânea</span><div class="track"><div class="fill" style="width:32.4%; background:var(--tealD);"></div></div><span class="rval">24 (10,2%)</span></div>
-          <div class="barrow"><span class="rlabel">Cocais</span><div class="track"><div class="fill" style="width:31.1%; background:var(--accent-2);"></div></div><span class="rval">23 (9,8%)</span></div>
+          <div class="barrow"><span class="rlabel"><strong>Cocais</strong></span><div class="track"><div class="fill" style="width:31.1%; background:var(--accent-2);"></div></div><span class="rval">23 (9,8%)</span></div>
           <div class="barrow"><span class="rlabel">Chapada das Mangabeiras</span><div class="track"><div class="fill" style="width:28.4%; background:var(--tealD);"></div></div><span class="rval">21 (8,9%)</span></div>
           <div class="barrow"><span class="rlabel">V. dos Rios PI e Itaueiras</span><div class="track"><div class="fill" style="width:24.3%; background:var(--tealD);"></div></div><span class="rval">18 (7,7%)</span></div>
           <div class="barrow"><span class="rlabel">Vale do Canindé</span><div class="track"><div class="fill" style="width:21.6%; background:var(--tealD);"></div></div><span class="rval">16 (6,8%)</span></div>
@@ -405,7 +408,7 @@
           <div class="barrow"><span class="rlabel">Chapada das Mangabeiras</span><div class="track"><div class="fill" style="width:61.5%; background:var(--tealD);"></div></div><span class="rval">8 de 21 (38,1%)</span></div>
           <div class="barrow"><span class="rlabel">Planície Litorânea</span><div class="track"><div class="fill" style="width:46.2%; background:var(--tealD);"></div></div><span class="rval">6 de 24 (25,0%)</span></div>
           <div class="barrow"><span class="rlabel">Vale do Rio Guaribas</span><div class="track"><div class="fill" style="width:38.5%; background:var(--tealD);"></div></div><span class="rval">5 de 12 (41,7%)</span></div>
-          <div class="barrow"><span class="rlabel">Cocais</span><div class="track"><div class="fill" style="width:38.5%; background:var(--accent-2);"></div></div><span class="rval">5 de 23 (21,7%)</span></div>
+          <div class="barrow"><span class="rlabel"><strong>Cocais</strong></span><div class="track"><div class="fill" style="width:38.5%; background:var(--accent-2);"></div></div><span class="rval">5 de 23 (21,7%)</span></div>
           <div class="barrow"><span class="rlabel">Carnaubais</span><div class="track"><div class="fill" style="width:38.5%; background:var(--tealD);"></div></div><span class="rval">5 de 11 (45,5%)</span></div>
           <div class="barrow"><span class="rlabel">Vale do Sambito</span><div class="track"><div class="fill" style="width:30.8%; background:var(--tealD);"></div></div><span class="rval">4 de 6 (66,7%)</span></div>
           <div class="barrow"><span class="rlabel">Serra da Capivara</span><div class="track"><div class="fill" style="width:30.8%; background:var(--tealD);"></div></div><span class="rval">4 de 14 (28,6%)</span></div>
@@ -432,14 +435,14 @@
       <h3>Resultado dos testes</h3>
       <div class="sub">p &lt; 0,05 indicaria diferença estatisticamente significativa</div>
       <div class="tablewrap">
-        <table>
+        <table class="no-emphasis">
           <thead>
             <tr><th>Variável</th><th class="num">p-valor</th><th>Diferença significativa?</th></tr>
           </thead>
           <tbody>
             <tr><td>Faixa etária</td><td class="num">0,304</td><td>Não</td></tr>
             <tr><td>Raça/cor</td><td class="num">0,497</td><td>Não</td></tr>
-            <tr><td>Escolaridade</td><td class="num">0,099</td><td>Não (mais próximo do limiar)</td></tr>
+            <tr><td>Escolaridade</td><td class="num">0,099</td><td>Não</td></tr>
             <tr><td>Local de ocorrência</td><td class="num">0,552</td><td>Não</td></tr>
           </tbody>
         </table>
