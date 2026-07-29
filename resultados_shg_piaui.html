@@ -1,0 +1,340 @@
+<title>Óbitos Maternos por SHG — Piauí, 2019–2024</title>
+<style>
+  :root{
+    --paper:#EFF1EE;
+    --paper-raised:#FFFFFF;
+    --ink:#1C2420;
+    --ink-soft:#4B554F;
+    --muted:#77827B;
+    --line:#D8DDD8;
+    --accent:#2B6F6B;
+    --accent-ink:#F2F7F6;
+    --accent-2:#7C3550;
+    --accent-2-soft:#F3E6EB;
+    --tealA:#DCEAE8; --tealB:#B7D3D0; --tealC:#7FADA9; --tealD:#4A8A85; --tealE:#2B6F6B; --tealF:#194845;
+    --shadow: 0 1px 2px rgba(28,36,32,0.06), 0 8px 24px -12px rgba(28,36,32,0.18);
+    --radius: 10px;
+  }
+  :root[data-theme="dark"]{
+    --paper:#151A17;
+    --paper-raised:#1D2320;
+    --ink:#EAEFEC;
+    --ink-soft:#B9C4BE;
+    --muted:#83907F ​;
+    --line:#2B332E;
+    --accent:#5FA8A2;
+    --accent-ink:#0E1615;
+    --accent-2:#C77E96;
+    --accent-2-soft:#2B1E23;
+    --tealA:#20302E; --tealB:#274643; --tealC:#316560; --tealD:#3C8983; --tealE:#5FA8A2; --tealF:#8FC9C4;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 28px -14px rgba(0,0,0,0.6);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#151A17;
+      --paper-raised:#1D2320;
+      --ink:#EAEFEC;
+      --ink-soft:#B9C4BE;
+      --muted:#83907F;
+      --line:#2B332E;
+      --accent:#5FA8A2;
+      --accent-ink:#0E1615;
+      --accent-2:#C77E96;
+      --accent-2-soft:#2B1E23;
+      --tealA:#20302E; --tealB:#274643; --tealC:#316560; --tealD:#3C8983; --tealE:#5FA8A2; --tealF:#8FC9C4;
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 12px 28px -14px rgba(0,0,0,0.6);
+    }
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family: ui-sans-serif, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{ max-width:920px; margin:0 auto; padding:48px 28px 80px; }
+
+  h1,h2,h3{ font-family: ui-serif, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif; font-weight:600; letter-spacing:-0.01em; text-wrap:balance; margin:0; color:var(--ink); }
+
+  header.masthead{ border-bottom:2px solid var(--ink); padding-bottom:20px; margin-bottom:36px; }
+  .eyebrow{ display:flex; gap:10px; align-items:center; margin-bottom:14px; }
+  .badge{ font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); border-radius:999px; padding:3px 10px; font-family:ui-sans-serif,sans-serif; }
+  .eyebrow .sep{ color:var(--muted); font-size:12px; }
+  .eyebrow .meta{ color:var(--muted); font-size:12px; }
+  h1{ font-size:32px; line-height:1.15; margin-bottom:8px; }
+  .subtitle{ font-size:16px; color:var(--ink-soft); max-width:70ch; line-height:1.5; }
+
+  section{ margin-top:52px; }
+  .section-head{ display:flex; align-items:baseline; gap:12px; margin-bottom:6px; }
+  .section-num{ font-family:ui-serif,serif; font-size:13px; color:var(--accent); font-weight:600; }
+  h2{ font-size:21px; }
+  .section-desc{ color:var(--muted); font-size:13.5px; margin-top:6px; max-width:68ch; line-height:1.5; }
+
+  /* stat tiles */
+  .stats{ display:grid; grid-template-columns:repeat(5,1fr); gap:2px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-top:18px; }
+  .stat{ background:var(--paper-raised); padding:18px 16px; display:flex; flex-direction:column; gap:6px; }
+  .stat .value{ font-family:ui-serif,serif; font-size:26px; font-weight:600; color:var(--accent); line-height:1; }
+  .stat .label{ font-size:11.5px; color:var(--ink-soft); line-height:1.35; }
+
+  /* charts */
+  .card{ background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px 24px; margin-top:16px; }
+  .card h3{ font-size:14px; font-family:ui-sans-serif,sans-serif; font-weight:600; color:var(--ink); margin-bottom:2px; }
+  .card .sub{ font-size:12px; color:var(--muted); margin-bottom:16px; }
+
+  .barlist{ display:flex; flex-direction:column; gap:10px; }
+  .barrow{ display:grid; grid-template-columns:150px 1fr 64px; align-items:center; gap:10px; }
+  .barrow .rlabel{ font-size:12.5px; color:var(--ink-soft); }
+  .track{ background:var(--line); border-radius:4px; height:14px; position:relative; overflow:hidden; }
+  .fill{ height:100%; border-radius:4px; }
+  .barrow .rval{ font-size:12.5px; color:var(--ink); text-align:right; font-weight:600; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:640px){ .grid2{ grid-template-columns:1fr; } .stats{ grid-template-columns:repeat(2,1fr);} }
+
+  /* temporal chart */
+  .trend{ display:flex; align-items:flex-end; gap:18px; height:180px; padding:8px 4px 0; position:relative; }
+  .trend::before{ content:""; position:absolute; left:0; right:0; bottom:38px; border-top:1px dashed var(--line); }
+  .tcol{ flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end; }
+  .tbar{ width:100%; max-width:46px; border-radius:4px 4px 3px 3px; background:var(--accent); position:relative; }
+  .tbar .n{ position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:700; color:var(--ink); }
+  .tpct{ font-size:10.5px; color:var(--muted); }
+  .tyear{ font-size:12px; color:var(--ink-soft); font-weight:600; }
+
+  .legend{ display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; font-size:11.5px; color:var(--ink-soft); }
+  .legend .dot{ width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:5px; }
+
+  table{ width:100%; border-collapse:collapse; font-size:12.5px; }
+  thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-weight:600; padding:8px 10px; border-bottom:1px solid var(--line); }
+  tbody td{ padding:8px 10px; border-bottom:1px solid var(--line); color:var(--ink-soft); }
+  tbody tr:last-child td{ border-bottom:none; font-weight:700; color:var(--ink); }
+  td.num, th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  .tablewrap{ overflow-x:auto; }
+
+  .callout{ background:var(--accent-2-soft); border:1px solid color-mix(in srgb, var(--accent-2) 35%, transparent); border-radius:var(--radius); padding:16px 18px; margin-top:18px; display:flex; gap:12px; }
+  .callout .mark{ color:var(--accent-2); font-family:ui-serif,serif; font-weight:700; font-size:15px; flex:none; }
+  .callout p{ margin:0; font-size:13px; line-height:1.55; color:var(--ink-soft); }
+  .callout strong{ color:var(--ink); }
+
+  .rmm{ display:flex; align-items:flex-end; gap:20px; height:190px; padding-top:12px; position:relative; }
+  .rmmcol{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; }
+  .rmmpair{ display:flex; gap:5px; align-items:flex-end; height:150px; }
+  .rmmbar{ width:20px; border-radius:4px 4px 3px 3px; position:relative; }
+  .rmmbar .n{ position:absolute; top:-18px; left:50%; transform:translateX(-50%); font-size:10.5px; font-weight:700; white-space:nowrap; }
+  .rmmyear{ font-size:11.5px; color:var(--ink-soft); font-weight:600; }
+
+  footer{ margin-top:60px; padding-top:20px; border-top:1px solid var(--line); display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; font-size:11.5px; color:var(--muted); line-height:1.6; }
+  footer .col{ max-width:60ch; }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span class="badge">Estudo epidemiológico</span>
+      <span class="sep">·</span>
+      <span class="meta">Fonte: MS/SVSA/CGIAE — Sistema de Informações sobre Mortalidade (SIM) e SINASC, via DATASUS/Tabnet</span>
+    </div>
+    <h1>Óbitos maternos por Síndromes Hipertensivas na Gestação</h1>
+    <p class="subtitle">Perfil epidemiológico no Estado do Piauí e comparação com a Região de Saúde dos Cocais, 2019–2024 (CID-10: O10, O11, O13, O14, O15, O16).</p>
+  </header>
+
+  <!-- HEADLINE STATS -->
+  <div class="stats">
+    <div class="stat"><div class="value">62</div><div class="label">óbitos por SHG no Piauí, 2019–2024</div></div>
+    <div class="stat"><div class="value">26,4%</div><div class="label">de todos os 235 óbitos maternos do período</div></div>
+    <div class="stat"><div class="value">53,2%</div><div class="label">foram por eclâmpsia (O15) — categoria predominante</div></div>
+    <div class="stat"><div class="value">53,2%</div><div class="label">ocorreram entre 30–39 anos de idade</div></div>
+    <div class="stat"><div class="value">72,6%</div><div class="label">das mulheres eram pardas</div></div>
+  </div>
+
+  <!-- SECTION 2: DISTRIBUIÇÃO POR TIPO -->
+  <section>
+    <div class="section-head"><span class="section-num">01</span><h2>Distribuição por tipo de síndrome hipertensiva</h2></div>
+    <p class="section-desc">Objetivo específico: identificar a distribuição dos casos por tipo de síndrome hipertensiva gestacional. Nenhum óbito foi registrado sob O11 no período — a categoria não aparece no gráfico.</p>
+
+    <div class="card">
+      <h3>Óbitos por categoria CID-10 · Piauí, 2019–2024 (n = 62)</h3>
+      <div class="sub">Barras ordenadas por magnitude — tom mais escuro indica maior frequência</div>
+      <div class="barlist">
+        <div class="barrow"><span class="rlabel">O15 — Eclâmpsia</span><div class="track"><div class="fill" style="width:100%; background:var(--tealF);"></div></div><span class="rval">33 · 53,2%</span></div>
+        <div class="barrow"><span class="rlabel">O14 — HG c/ proteinúria</span><div class="track"><div class="fill" style="width:63.6%; background:var(--tealE);"></div></div><span class="rval">21 · 33,9%</span></div>
+        <div class="barrow"><span class="rlabel">O13 — HG s/ proteinúria</span><div class="track"><div class="fill" style="width:15.2%; background:var(--tealD);"></div></div><span class="rval">5 · 8,1%</span></div>
+        <div class="barrow"><span class="rlabel">O10 — Hipert. pré-existente</span><div class="track"><div class="fill" style="width:6.1%; background:var(--tealC);"></div></div><span class="rval">2 · 3,2%</span></div>
+        <div class="barrow"><span class="rlabel">O16 — Hipert. materna NE</span><div class="track"><div class="fill" style="width:3%; background:var(--tealB);"></div></div><span class="rval">1 · 1,6%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 1: PERFIL EPIDEMIOLÓGICO -->
+  <section>
+    <div class="section-head"><span class="section-num">02</span><h2>Perfil epidemiológico dos óbitos por SHG</h2></div>
+    <p class="section-desc">Objetivo específico: traçar o perfil por faixa etária, etnia/cor, escolaridade e local de ocorrência (Piauí, 2019–2024, n = 62).</p>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Faixa etária</h3>
+        <div class="sub">Concentração entre 20–39 anos: 90,3% dos casos</div>
+        <div class="barlist">
+          <div class="barrow"><span class="rlabel">10–14 anos</span><div class="track"><div class="fill" style="width:3%; background:var(--tealB);"></div></div><span class="rval">1 · 1,6%</span></div>
+          <div class="barrow"><span class="rlabel">15–19 anos</span><div class="track"><div class="fill" style="width:9.1%; background:var(--tealC);"></div></div><span class="rval">3 · 4,8%</span></div>
+          <div class="barrow"><span class="rlabel">20–29 anos</span><div class="track"><div class="fill" style="width:69.7%; background:var(--tealD);"></div></div><span class="rval">23 · 37,1%</span></div>
+          <div class="barrow"><span class="rlabel">30–39 anos</span><div class="track"><div class="fill" style="width:100%; background:var(--tealF);"></div></div><span class="rval">33 · 53,2%</span></div>
+          <div class="barrow"><span class="rlabel">40–49 anos</span><div class="track"><div class="fill" style="width:6.1%; background:var(--tealC);"></div></div><span class="rval">2 · 3,2%</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Raça/cor</h3>
+        <div class="sub">Nenhum registro ignorado</div>
+        <div class="barlist">
+          <div class="barrow"><span class="rlabel">Parda</span><div class="track"><div class="fill" style="width:100%; background:var(--tealF);"></div></div><span class="rval">45 · 72,6%</span></div>
+          <div class="barrow"><span class="rlabel">Branca</span><div class="track"><div class="fill" style="width:20%; background:var(--tealD);"></div></div><span class="rval">9 · 14,5%</span></div>
+          <div class="barrow"><span class="rlabel">Preta</span><div class="track"><div class="fill" style="width:17.8%; background:var(--tealC);"></div></div><span class="rval">8 · 12,9%</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Escolaridade</h3>
+        <div class="sub">40,3% com 8–11 anos de estudo; 11,3% ignorados</div>
+        <div class="barlist">
+          <div class="barrow"><span class="rlabel">Nenhuma</span><div class="track"><div class="fill" style="width:4%; background:var(--tealB);"></div></div><span class="rval">1 · 1,6%</span></div>
+          <div class="barrow"><span class="rlabel">1–3 anos</span><div class="track"><div class="fill" style="width:20%; background:var(--tealC);"></div></div><span class="rval">5 · 8,1%</span></div>
+          <div class="barrow"><span class="rlabel">4–7 anos</span><div class="track"><div class="fill" style="width:76%; background:var(--tealD);"></div></div><span class="rval">19 · 30,6%</span></div>
+          <div class="barrow"><span class="rlabel">8–11 anos</span><div class="track"><div class="fill" style="width:100%; background:var(--tealF);"></div></div><span class="rval">25 · 40,3%</span></div>
+          <div class="barrow"><span class="rlabel">12 anos e mais</span><div class="track"><div class="fill" style="width:20%; background:var(--tealC);"></div></div><span class="rval">5 · 8,1%</span></div>
+          <div class="barrow"><span class="rlabel">Ignorado</span><div class="track"><div class="fill" style="width:28%; background:var(--muted);"></div></div><span class="rval">7 · 11,3%</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Local de ocorrência</h3>
+        <div class="sub">Ambiente hospitalar concentra quase a totalidade dos óbitos</div>
+        <div class="barlist">
+          <div class="barrow"><span class="rlabel">Hospital</span><div class="track"><div class="fill" style="width:100%; background:var(--tealF);"></div></div><span class="rval">58 · 93,5%</span></div>
+          <div class="barrow"><span class="rlabel">Outros</span><div class="track"><div class="fill" style="width:3.4%; background:var(--tealC);"></div></div><span class="rval">2 · 3,2%</span></div>
+          <div class="barrow"><span class="rlabel">Outro estabelec. saúde</span><div class="track"><div class="fill" style="width:1.7%; background:var(--tealB);"></div></div><span class="rval">1 · 1,6%</span></div>
+          <div class="barrow"><span class="rlabel">Domicílio</span><div class="track"><div class="fill" style="width:1.7%; background:var(--tealB);"></div></div><span class="rval">1 · 1,6%</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3: EVOLUÇÃO TEMPORAL -->
+  <section>
+    <div class="section-head"><span class="section-num">03</span><h2>Evolução temporal dos óbitos por SHG</h2></div>
+    <p class="section-desc">Objetivo específico: analisar a evolução temporal. A barra mostra o número absoluto de óbitos por SHG; o percentual abaixo indica a participação da SHG no total de óbitos maternos daquele ano.</p>
+
+    <div class="card">
+      <h3>Óbitos por SHG e participação no total de óbitos maternos · Piauí</h3>
+      <div class="sub">Total de óbitos maternos (todas as causas) no ano, entre parênteses</div>
+      <div class="trend">
+        <div class="tcol"><div class="tbar" style="height:73.7%;"><span class="n">14</span></div><span class="tpct">34,1% de 41</span><span class="tyear">2019</span></div>
+        <div class="tcol"><div class="tbar" style="height:68.4%;"><span class="n">13</span></div><span class="tpct">32,5% de 40</span><span class="tyear">2020</span></div>
+        <div class="tcol"><div class="tbar" style="height:42.1%;"><span class="n">8</span></div><span class="tpct">13,6% de 59</span><span class="tyear">2021</span></div>
+        <div class="tcol"><div class="tbar" style="height:73.7%;"><span class="n">14</span></div><span class="tpct">37,8% de 37</span><span class="tyear">2022</span></div>
+        <div class="tcol"><div class="tbar" style="height:26.3%;"><span class="n">5</span></div><span class="tpct">21,7% de 23</span><span class="tyear">2023</span></div>
+        <div class="tcol"><div class="tbar" style="height:42.1%;"><span class="n">8</span></div><span class="tpct">22,9% de 35</span><span class="tyear">2024</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="mark">＊</span>
+      <p><strong>Leitura do padrão temporal:</strong> em números absolutos a série oscila sem tendência linear clara (pico em 2019 e 2022, com 14 óbitos; menor valor em 2023, com 5). O achado mais relevante é a <strong>queda proporcional em 2021</strong> — SHG caiu para 13,6% do total de óbitos maternos, seu menor peso relativo do período — coincidindo com o ano em que os óbitos maternos totais do Piauí saltaram para 59 (o maior do período), puxados por causas infecciosas/parasitárias maternas (CID O98, provavelmente COVID-19 associado à gestação), que responderam por 20 dos 59 óbitos daquele ano. Ou seja, a SHG não diminuiu em termos absolutos de forma expressiva em 2021 (8 óbitos) — foi diluída por um excesso de mortes de outra causa.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 4: COMPARAÇÃO PIAUÍ x COCAIS -->
+  <section>
+    <div class="section-head"><span class="section-num">04</span><h2>Comparação: Estado do Piauí × Região de Saúde dos Cocais</h2></div>
+    <p class="section-desc">Objetivo geral: comparação da mortalidade materna entre a Região dos Cocais e o Estado. Razão de Mortalidade Materna (RMM) por 100 mil nascidos vivos, calculada com óbitos maternos totais (todas as causas) e nascidos vivos (SINASC) de cada território.</p>
+
+    <div class="card">
+      <h3>RMM por 100 mil nascidos vivos</h3>
+      <div class="sub">Piauí (Estado) vs. Região dos Cocais</div>
+      <div class="rmm">
+        <div class="rmmcol">
+          <div class="rmmpair">
+            <div class="rmmbar" style="height:66.6%; background:var(--tealD);"><span class="n" style="color:var(--tealD);">85,5</span></div>
+            <div class="rmmbar" style="height:69.3%; background:var(--accent-2);"><span class="n" style="color:var(--accent-2);">88,9</span></div>
+          </div>
+          <span class="rmmyear">2019</span>
+        </div>
+        <div class="rmmcol">
+          <div class="rmmpair">
+            <div class="rmmbar" style="height:68.9%; background:var(--tealD);"><span class="n" style="color:var(--tealD);">88,4</span></div>
+            <div class="rmmbar" style="height:70.7%; background:var(--accent-2);"><span class="n" style="color:var(--accent-2);">90,8</span></div>
+          </div>
+          <span class="rmmyear">2020</span>
+        </div>
+        <div class="rmmcol">
+          <div class="rmmpair">
+            <div class="rmmbar" style="height:100%; background:var(--tealD);"><span class="n" style="color:var(--tealD);">128,3</span></div>
+            <div class="rmmbar" style="height:96.7%; background:var(--accent-2);"><span class="n" style="color:var(--accent-2);">124,1</span></div>
+          </div>
+          <span class="rmmyear">2021</span>
+        </div>
+        <div class="rmmcol">
+          <div class="rmmpair">
+            <div class="rmmbar" style="height:68.3%; background:var(--tealD);"><span class="n" style="color:var(--tealD);">87,6</span></div>
+            <div class="rmmbar" style="height:30.2%; background:var(--accent-2);"><span class="n" style="color:var(--accent-2);">38,7</span></div>
+          </div>
+          <span class="rmmyear">2022</span>
+        </div>
+        <div class="rmmcol">
+          <div class="rmmpair">
+            <div class="rmmbar" style="height:42.6%; background:var(--tealD);"><span class="n" style="color:var(--tealD);">54,6</span></div>
+            <div class="rmmbar" style="height:15%; background:var(--accent-2);"><span class="n" style="color:var(--accent-2);">19,2</span></div>
+          </div>
+          <span class="rmmyear">2023</span>
+        </div>
+        <div class="rmmcol">
+          <div class="rmmpair">
+            <div class="rmmbar" style="height:68.7%; background:var(--tealD);"><span class="n" style="color:var(--tealD);">88,2</span></div>
+            <div class="rmmbar" style="height:46.5%; background:var(--accent-2);"><span class="n" style="color:var(--accent-2);">59,6</span></div>
+          </div>
+          <span class="rmmyear">2024</span>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--tealD);"></span>Estado do Piauí</span>
+        <span><span class="dot" style="background:var(--accent-2);"></span>Região dos Cocais</span>
+      </div>
+    </div>
+
+    <div class="callout">
+      <span class="mark">⚠</span>
+      <p><strong>Limitação importante:</strong> essa RMM é calculada sobre óbitos maternos de <strong>todas as causas</strong>, não apenas SHG — o Tabnet/SIM disponibiliza tabelas cruzando CID-10 × ano e CID-10 × Região de Saúde separadamente, mas não uma tabela tripla (CID-10 × Região × ano) pronta para download. Nas planilhas enviadas não há, portanto, a contagem de óbitos por SHG especificamente na Região dos Cocais. A Região dos Cocais concentrou 23 dos 235 óbitos maternos do estado (9,8% do total, 2019–2024), proporção compatível com sua participação nos nascimentos do Piauí (≈11–13% ao ano). Para responder ao objetivo geral com precisão, recomenda-se gerar no Tabnet uma consulta específica de <strong>Óbitos por Categoria CID-10 filtrando a Região de Saúde = Cocais</strong> (a mesma tela usada para a tabela do Estado, trocando o filtro de abrangência).</p>
+    </div>
+  </section>
+
+  <!-- APPENDIX TABLE -->
+  <section>
+    <div class="section-head"><span class="section-num">05</span><h2>Tabela-síntese</h2></div>
+    <p class="section-desc">Óbitos por SHG segundo categoria CID-10 e ano — Piauí, 2019–2024.</p>
+    <div class="card">
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Categoria CID-10</th><th class="num">2019</th><th class="num">2020</th><th class="num">2021</th><th class="num">2022</th><th class="num">2023</th><th class="num">2024</th><th class="num">Total</th><th class="num">%</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>O10 — Hipertensão pré-existente</td><td class="num">1</td><td class="num">–</td><td class="num">1</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">2</td><td class="num">3,2%</td></tr>
+            <tr><td>O11 — Hipert. pré-exist. c/ proteinúria</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">0</td><td class="num">0,0%</td></tr>
+            <tr><td>O13 — HG sem proteinúria significativa</td><td class="num">–</td><td class="num">1</td><td class="num">–</td><td class="num">2</td><td class="num">–</td><td class="num">2</td><td class="num">5</td><td class="num">8,1%</td></tr>
+            <tr><td>O14 — HG com proteinúria significativa</td><td class="num">6</td><td class="num">5</td><td class="num">3</td><td class="num">4</td><td class="num">1</td><td class="num">2</td><td class="num">21</td><td class="num">33,9%</td></tr>
+            <tr><td>O15 — Eclâmpsia</td><td class="num">7</td><td class="num">6</td><td class="num">4</td><td class="num">8</td><td class="num">4</td><td class="num">4</td><td class="num">33</td><td class="num">53,2%</td></tr>
+            <tr><td>O16 — Hipertensão materna não especificada</td><td class="num">–</td><td class="num">1</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">–</td><td class="num">1</td><td class="num">1,6%</td></tr>
+            <tr><td>Total SHG</td><td class="num">14</td><td class="num">13</td><td class="num">8</td><td class="num">14</td><td class="num">5</td><td class="num">8</td><td class="num">62</td><td class="num">100%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="col">Fonte: MS/SVSA/CGIAE — Sistema de Informações sobre Mortalidade (SIM) e Sistema de Informações sobre Nascidos Vivos (SINASC), DATASUS/Tabnet. Dados finais até 2024, atualizados em 02/12/2025. Óbitos por local de residência da falecida.</div>
+    <div class="col">Análise descritiva elaborada a partir de "Gráficos e indicadores.xlsx" e "Óbitos maternos piauí 2019 a 2024.xlsx" — Estudo Epidemiológico SHG, Piauí. Julho de 2026.</div>
+  </footer>
+
+</div>

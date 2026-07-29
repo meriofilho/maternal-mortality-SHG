@@ -1,0 +1,383 @@
+---
+title: "Óbitos Maternos por Síndromes Hipertensivas na Gestação (SHG)"
+subtitle: "Perfil epidemiológico no Estado do Piauí e comparação com a Região de Saúde dos Cocais, 2019–2024"
+author:
+  - "Susana Silva Lima"
+  - "Rosa Maria do Rego Lima"
+  - "Romério de Oliveira Lima Filho (responsável pela análise)"
+  - "Mara Regina Pereira Viana Damasceno Feitosa"
+date: "`r format(Sys.Date(), '%d/%m/%Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
+                       fig.width = 8, fig.height = 5)
+```
+
+## Sobre esta análise
+
+Análise descritiva dos óbitos maternos por Síndromes Hipertensivas na
+Gestação (SHG) no Piauí entre 2019 e 2024, com comparação à Região de
+Saúde dos Cocais. CID-10 considerados: **O10, O11, O13, O14, O15 e O16**.
+
+Fonte dos dados: MS/SVSA/CGIAE — Sistema de Informações sobre Mortalidade
+(SIM) e Sistema de Informações sobre Nascidos Vivos (SINASC), DATASUS/Tabnet.
+
+Cada seção abaixo corresponde a uma análise/gráfico independente — rode os
+chunks na ordem (ou use *Run All*) para reproduzir todas as figuras e
+tabelas em `figuras/` e `tabelas/`.
+
+## 1. Pacotes
+
+```{r pacotes}
+pacotes <- c("readxl", "dplyr", "tidyr", "stringr", "forcats",
+             "ggplot2", "scales", "readr", "sysfonts", "showtext")
+faltando <- pacotes[!(pacotes %in% installed.packages()[, "Package"])]
+if (length(faltando) > 0) install.packages(faltando, repos = "https://cloud.r-project.org")
+invisible(lapply(pacotes, library, character.only = TRUE))
+```
+
+## 2. Fonte tipográfica (Roboto) e tema visual
+
+Todas as figuras usam a fonte **Roboto** (baixada do Google Fonts na
+primeira execução) e não têm linhas de grade no fundo.
+
+```{r fonte-tema}
+font_add_google("Roboto", "Roboto")
+showtext_auto()
+showtext_opts(dpi = 300)
+
+fonte_base <- "Roboto"
+
+tema_artigo <- theme_minimal(base_size = 12, base_family = fonte_base) +
+  theme(
+    plot.title = element_text(face = "bold", size = 13, hjust = 0, lineheight = 1.1),
+    plot.subtitle = element_text(color = "grey35", size = 10),
+    plot.caption = element_text(color = "grey45", size = 8, hjust = 0),
+    axis.title = element_text(size = 10),
+    panel.grid = element_blank(),
+    legend.position = "top",
+    legend.title = element_blank()
+  )
+
+quebrar_titulo <- function(x, largura = 45) str_wrap(x, width = largura)
+```
+
+## 3. Caminhos, pastas de saída e códigos CID-10 de SHG
+
+```{r caminhos}
+arq_obitos <- "dados/Óbitos maternos piauí 2019 a 2024 .xlsx"
+arq_graf   <- "dados/Gráficos e indicadores.xlsx"
+
+dir_figuras <- "figuras"
+dir_tabelas <- "tabelas"
+if (!dir.exists(dir_figuras)) dir.create(dir_figuras)
+if (!dir.exists(dir_tabelas)) dir.create(dir_tabelas)
+
+cid_shg <- c("O10", "O11", "O13", "O14", "O15", "O16")
+
+rotulos_cid <- c(
+  O10 = "O10 - Hipertensão pré-existente",
+  O11 = "O11 - Hipert. pré-exist. c/ proteinúria",
+  O13 = "O13 - HG sem proteinúria significativa",
+  O14 = "O14 - HG com proteinúria significativa",
+  O15 = "O15 - Eclâmpsia",
+  O16 = "O16 - Hipertensão materna NE"
+)
+
+cor_estado <- "#2B6F6B"
+cor_cocais <- "#7C3550"
+paleta_shg <- c("#DCEAE8", "#B7D3D0", "#7FADA9", "#4A8A85", "#2B6F6B", "#194845")
+```
+
+## 4. Funções auxiliares
+
+```{r funcoes}
+# Lê uma tabela "Categoria CID-10 x dimensão" do Tabnet e mantém só as
+# linhas de SHG
+ler_tabela_cid <- function(caminho, aba, skip = 3) {
+  bruto <- read_excel(caminho, sheet = aba, skip = skip)
+  names(bruto)[1] <- "categoria_cid"
+
+  bruto %>%
+    mutate(cid = str_extract(categoria_cid, "^[A-Z][0-9]{2}")) %>%
+    filter(cid %in% cid_shg) %>%
+    mutate(
+      cid = factor(cid, levels = cid_shg),
+      rotulo = unname(rotulos_cid[as.character(cid)])
+    ) %>%
+    select(-categoria_cid) %>%
+    relocate(cid, rotulo) %>%
+    mutate(across(-c(cid, rotulo),
+                  ~ as.numeric(str_replace(as.character(.), "^-$", "0"))))
+}
+
+# Soma as categorias de SHG em cada dimensão sociodemográfica (perfil)
+perfil_resumo <- function(tabela, nome_dimensao) {
+  tabela %>%
+    select(-cid, -rotulo, -Total) %>%
+    summarise(across(everything(), sum)) %>%
+    pivot_longer(everything(), names_to = nome_dimensao, values_to = "n") %>%
+    mutate(
+      pct = n / sum(n) * 100,
+      !!nome_dimensao := fct_inorder(.data[[nome_dimensao]])
+    )
+}
+
+grafico_perfil <- function(dados, dimensao, titulo, cor_barra = cor_estado) {
+  ggplot(dados, aes(x = .data[[dimensao]], y = n)) +
+    geom_col(fill = cor_barra, width = 0.65) +
+    geom_text(aes(label = paste0(n, " (", round(pct, 1), "%)")),
+              hjust = -0.1, size = 3.2, family = fonte_base) +
+    coord_flip(clip = "off") +
+    scale_y_continuous(limits = c(0, max(dados$n) * 1.3)) +
+    labs(title = quebrar_titulo(titulo), subtitle = "Piauí, 2019–2024 (n = 62)",
+         x = NULL, y = "Número de óbitos",
+         caption = "Fonte: MS/SVSA/CGIAE - SIM/DATASUS.") +
+    tema_artigo
+}
+
+# Salva cada figura em PNG (300dpi) e PDF vetorial (fonte Roboto embutida
+# via cairo_pdf) dentro de figuras/
+salvar_figura <- function(grafico, nome, largura = 16, altura = 10) {
+  ggsave(file.path(dir_figuras, paste0(nome, ".png")), grafico,
+         width = largura, height = altura, units = "cm", dpi = 300)
+  ggsave(file.path(dir_figuras, paste0(nome, ".pdf")), grafico,
+         width = largura, height = altura, units = "cm",
+         device = grDevices::cairo_pdf)
+}
+
+# Exporta tabela em .csv (';' + UTF-8 com BOM) para abrir certo no Excel,
+# sem "DomicÃ­lio" / "Via pÃºblica" etc.
+salvar_tabela <- function(tabela, nome) {
+  write_excel_csv2(tabela, file.path(dir_tabelas, paste0(nome, ".csv")))
+}
+```
+
+## 5. Leitura dos dados
+
+```{r leitura}
+shg_ano          <- ler_tabela_cid(arq_obitos, "sim_cnv_mat10pi091246191_36_186")
+shg_faixa_etaria <- ler_tabela_cid(arq_obitos, "fx etaria")
+shg_escolaridade <- ler_tabela_cid(arq_obitos, "escolaridade")
+shg_raca_cor     <- ler_tabela_cid(arq_obitos, "raça cor")
+shg_local        <- ler_tabela_cid(arq_obitos, "local ocorrencia")
+shg_causa_obst   <- ler_tabela_cid(arq_obitos, "causa obstetrica")
+shg_investigado  <- ler_tabela_cid(arq_obitos, "ob materno investigado")
+
+# Total de óbitos maternos (TODAS as causas) por ano, para a % da SHG no ano
+obitos_totais_ano <- read_excel(arq_obitos, sheet = "sim_cnv_mat10pi091246191_36_186", skip = 3) %>%
+  filter(`Categoria CID-10` == "Total") %>%
+  select(-`Categoria CID-10`, -Total) %>%
+  pivot_longer(everything(), names_to = "ano", values_to = "obitos_totais") %>%
+  mutate(ano = as.integer(ano), obitos_totais = as.numeric(obitos_totais))
+
+# RMM (Razão de Mortalidade Materna) Piauí x Região dos Cocais - todas as
+# causas de óbito materno (o Tabnet não tem tabela pronta CID x Região x Ano)
+rmm_valor <- read_excel(arq_graf, sheet = "Comparação RMM Estado x Região", range = "A11:G13") %>%
+  rename(area = 1) %>%
+  pivot_longer(-area, names_to = "ano", values_to = "rmm") %>%
+  mutate(ano = as.integer(ano), area = str_trim(area))
+```
+
+## 6. Figura 1 — Distribuição por tipo de síndrome hipertensiva
+
+*Objetivo específico: identificar a distribuição dos casos por tipo de
+síndrome hipertensiva gestacional. O11 não teve registros no período.*
+
+```{r figura1}
+dist_tipo <- shg_ano %>%
+  select(cid, rotulo, Total) %>%
+  arrange(desc(Total)) %>%
+  mutate(
+    pct = Total / sum(Total) * 100,
+    rotulo = fct_reorder(rotulo, Total)
+  )
+
+fig1 <- ggplot(dist_tipo, aes(x = rotulo, y = Total, fill = rotulo)) +
+  geom_col(width = 0.7, show.legend = FALSE) +
+  geom_text(aes(label = paste0(Total, " (", round(pct, 1), "%)")),
+            hjust = -0.1, size = 3.4, family = fonte_base) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(limits = c(0, max(dist_tipo$Total) * 1.25)) +
+  scale_fill_manual(values = paleta_shg) +
+  labs(
+    title = quebrar_titulo("Distribuição dos óbitos por tipo de síndrome hipertensiva"),
+    subtitle = "Piauí, 2019–2024 (n = 62)",
+    x = NULL, y = "Número de óbitos",
+    caption = "Fonte: MS/SVSA/CGIAE - SIM/DATASUS. O11 não teve registros no período."
+  ) +
+  tema_artigo
+
+fig1
+salvar_figura(fig1, "fig1_distribuicao_tipo_shg")
+salvar_tabela(dist_tipo, "distribuicao_tipo")
+```
+
+## 7. Figura 2 — Evolução temporal
+
+*Objetivo específico: analisar a evolução temporal dos óbitos por SHG.*
+
+```{r figura2}
+evolucao <- shg_ano %>%
+  select(-cid, -rotulo, -Total) %>%
+  summarise(across(everything(), sum)) %>%
+  pivot_longer(everything(), names_to = "ano", values_to = "obitos_shg") %>%
+  mutate(ano = as.integer(ano)) %>%
+  left_join(obitos_totais_ano, by = "ano") %>%
+  mutate(pct_shg = obitos_shg / obitos_totais * 100)
+
+fig2 <- ggplot(evolucao, aes(x = factor(ano), y = obitos_shg)) +
+  geom_col(fill = cor_estado, width = 0.6) +
+  geom_text(aes(label = obitos_shg), vjust = -0.6, size = 3.6,
+            fontface = "bold", family = fonte_base) +
+  geom_text(aes(label = paste0(round(pct_shg, 1), "%")),
+            vjust = 1.8, size = 3, color = "white", family = fonte_base) +
+  scale_y_continuous(limits = c(0, max(evolucao$obitos_shg) * 1.2)) +
+  labs(
+    title = quebrar_titulo("Evolução temporal dos óbitos por SHG"),
+    subtitle = "Piauí, 2019–2024 — percentual em relação ao total de óbitos maternos do ano",
+    x = "Ano", y = "Número de óbitos por SHG",
+    caption = "Fonte: MS/SVSA/CGIAE - SIM/DATASUS."
+  ) +
+  tema_artigo
+
+fig2
+salvar_figura(fig2, "fig2_evolucao_temporal")
+salvar_tabela(evolucao, "evolucao_temporal")
+```
+
+## 8. Figura 3 — Perfil por faixa etária
+
+*Objetivo específico: perfil epidemiológico (faixa etária).*
+
+```{r figura3}
+perfil_faixa <- perfil_resumo(shg_faixa_etaria, "faixa_etaria")
+fig3 <- grafico_perfil(perfil_faixa, "faixa_etaria",
+                        "Óbitos por SHG segundo faixa etária")
+fig3
+salvar_figura(fig3, "fig3_faixa_etaria")
+salvar_tabela(perfil_faixa, "perfil_faixa_etaria")
+```
+
+## 9. Figura 4 — Perfil por raça/cor
+
+*Objetivo específico: perfil epidemiológico (etnia/cor).*
+
+```{r figura4}
+perfil_raca <- perfil_resumo(shg_raca_cor, "raca_cor") %>%
+  mutate(raca_cor = fct_reorder(raca_cor, n))
+fig4 <- grafico_perfil(perfil_raca, "raca_cor",
+                        "Óbitos por SHG segundo raça/cor")
+fig4
+salvar_figura(fig4, "fig4_raca_cor")
+salvar_tabela(perfil_raca, "perfil_raca_cor")
+```
+
+## 10. Figura 5 — Perfil por escolaridade
+
+*Objetivo específico: perfil epidemiológico (escolaridade).*
+
+```{r figura5}
+perfil_escolaridade <- perfil_resumo(shg_escolaridade, "escolaridade")
+fig5 <- grafico_perfil(perfil_escolaridade, "escolaridade",
+                        "Óbitos por SHG segundo escolaridade")
+fig5
+salvar_figura(fig5, "fig5_escolaridade")
+salvar_tabela(perfil_escolaridade, "perfil_escolaridade")
+```
+
+## 11. Figura 6 — Perfil por local de ocorrência
+
+*Objetivo específico: perfil epidemiológico (local de ocorrência).*
+
+```{r figura6}
+perfil_local <- perfil_resumo(shg_local, "local") %>%
+  mutate(local = fct_reorder(local, n))
+fig6 <- grafico_perfil(perfil_local, "local",
+                        "Óbitos por SHG segundo local de ocorrência")
+fig6
+salvar_figura(fig6, "fig6_local_ocorrencia")
+salvar_tabela(perfil_local, "perfil_local_ocorrencia")
+```
+
+## 12. Figura 7 — Comparação RMM: Piauí x Região dos Cocais
+
+*Objetivo geral: comparação da mortalidade materna entre a Região dos
+Cocais e o Estado. **Atenção:** RMM calculada com óbitos maternos de
+TODAS as causas — o Tabnet não oferece uma tabela pronta CID x Região x
+Ano para isolar a SHG por região (ver observação no README).*
+
+```{r figura7}
+fig7 <- ggplot(rmm_valor, aes(x = factor(ano), y = rmm, fill = area, group = area)) +
+  geom_col(position = position_dodge(width = 0.7), width = 0.6) +
+  geom_text(aes(label = round(rmm, 1)),
+            position = position_dodge(width = 0.7), vjust = -0.5, size = 3,
+            family = fonte_base) +
+  scale_fill_manual(values = c("Cocais" = cor_cocais, "Estado" = cor_estado)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.14))) +
+  labs(
+    title = quebrar_titulo("Razão de Mortalidade Materna: Piauí x Região dos Cocais"),
+    subtitle = "Por 100 mil nascidos vivos — todas as causas de óbito materno",
+    x = "Ano", y = "RMM (por 100 mil NV)",
+    caption = "Fonte: SIM e SINASC/DATASUS. RMM não é específica de SHG (ver limitação no texto)."
+  ) +
+  tema_artigo
+
+fig7
+salvar_figura(fig7, "fig7_rmm_piaui_cocais")
+salvar_tabela(rmm_valor, "rmm_piaui_cocais")
+```
+
+## 13. Figuras extras (material suplementar)
+
+Tipo de causa obstétrica e situação de investigação do óbito.
+
+```{r figuras-extras}
+perfil_causa <- perfil_resumo(shg_causa_obst, "tipo_causa") %>%
+  mutate(tipo_causa = fct_reorder(tipo_causa, n))
+fig8 <- grafico_perfil(perfil_causa, "tipo_causa",
+                        "Óbitos por SHG segundo tipo de causa obstétrica")
+fig8
+salvar_figura(fig8, "fig8_tipo_causa_obstetrica", altura = 6)
+
+perfil_investigado <- perfil_resumo(shg_investigado, "situacao") %>%
+  mutate(situacao = fct_reorder(situacao, n))
+fig9 <- grafico_perfil(perfil_investigado, "situacao",
+                        "Óbitos por SHG segundo situação de investigação")
+fig9
+salvar_figura(fig9, "fig9_situacao_investigacao", altura = 6)
+
+salvar_tabela(perfil_causa, "perfil_tipo_causa_obstetrica")
+salvar_tabela(perfil_investigado, "perfil_situacao_investigacao")
+```
+
+## 14. Estatística descritiva
+
+*Média, mediana, desvio padrão dos óbitos por SHG por ano, conforme
+previsto nos Métodos do projeto.*
+
+```{r estatistica-descritiva}
+estat_desc_ano <- evolucao %>%
+  summarise(
+    total   = sum(obitos_shg),
+    media   = mean(obitos_shg),
+    mediana = median(obitos_shg),
+    dp      = sd(obitos_shg),
+    minimo  = min(obitos_shg),
+    maximo  = max(obitos_shg)
+  )
+
+estat_desc_ano
+salvar_tabela(estat_desc_ano, "estatistica_descritiva_ano")
+```
+
+```{r conclusao, include=FALSE}
+message("Concluído. Figuras em '", dir_figuras, "/' e tabelas em '", dir_tabelas, "/'.")
+```
