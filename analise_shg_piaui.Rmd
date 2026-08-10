@@ -40,7 +40,8 @@ tabelas em `figuras/` e `tabelas/`.
 
 ```{r pacotes}
 pacotes <- c("readxl", "dplyr", "tidyr", "stringr", "forcats",
-             "ggplot2", "scales", "readr", "sysfonts", "showtext", "tibble")
+             "ggplot2", "scales", "readr", "sysfonts", "showtext", "tibble",
+             "patchwork")
 faltando <- pacotes[!(pacotes %in% installed.packages()[, "Package"])]
 if (length(faltando) > 0) install.packages(faltando, repos = "https://cloud.r-project.org")
 invisible(lapply(pacotes, library, character.only = TRUE))
@@ -918,6 +919,167 @@ cat("Validado: os 5 óbitos de SHG da Região dos Cocais batem entre Tabnet e mi
 *Fonte: MS/SVSA/CGIAE — SIM/DATASUS, microdado individual. Os 5 óbitos
 por SHG da Região dos Cocais ocorreram em 5 municípios diferentes —
 nenhuma concentração num único município da região.*
+
+## 20. Figuras finais para o artigo (limite de 5 elementos)
+
+*O periódico/evento limita a 5 figuras+tabelas no total. Consolidamos em
+4 figuras (uma delas com painéis A/B/C/D via `patchwork`) + 1 tabela,
+cobrindo o objetivo geral e os 3 objetivos específicos do projeto:*
+
+- *Figura 1 — Distribuição por tipo de SHG (objetivo específico 2)*
+- *Figura 2 — Perfil epidemiológico, painel A·B·C·D (objetivo específico 1)*
+- *Figura 3 — Evolução temporal (objetivo específico 3)*
+- *Figura 4 — Comparação Piauí × Cocais, painel A·B (objetivo geral)*
+- *Tabela 1 — Tabela-síntese (Seção 8)*
+
+*As demais análises (panorama das 12 regiões, idade exata, sazonalidade,
+município, testes estatísticos) permanecem descritas em texto no artigo,
+sem figura própria.*
+
+```{r tema-final}
+# Tema mais compacto, para caber com folga em painéis A/B/C/D sem
+# perder legibilidade — usado só nas figuras finais desta seção
+tema_final <- theme_minimal(base_size = 10, base_family = fonte_base) +
+  theme(
+    plot.title = element_text(face = "bold", size = 10.5, hjust = 0),
+    plot.subtitle = element_text(color = "grey35", size = 8.5),
+    axis.title = element_text(size = 9),
+    axis.text = element_text(size = 8.5),
+    panel.grid = element_blank(),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.text = element_text(size = 8.5),
+    plot.tag = element_text(face = "bold", size = 13, family = fonte_base)
+  )
+
+salvar_figura_final <- function(grafico, nome, largura, altura) {
+  ggsave(file.path(dir_figuras, paste0(nome, ".png")), grafico,
+         width = largura, height = altura, units = "cm", dpi = 300)
+  ggsave(file.path(dir_figuras, paste0(nome, ".pdf")), grafico,
+         width = largura, height = altura, units = "cm",
+         device = grDevices::cairo_pdf)
+}
+```
+
+### Figura 1 — Distribuição por tipo de síndrome hipertensiva
+
+```{r figura1-final, fig.width=6.3, fig.height=3.5}
+figura1_final <- ggplot(dist_tipo, aes(x = rotulo, y = Total, fill = rotulo)) +
+  geom_col(width = 0.7, show.legend = FALSE) +
+  geom_text(aes(label = paste0(Total, " (", round(pct, 1), "%)")),
+            hjust = -0.1, size = 3, family = fonte_base) +
+  coord_flip(clip = "off") +
+  scale_y_continuous(limits = c(0, max(dist_tipo$Total) * 1.28)) +
+  scale_fill_manual(values = paleta_shg) +
+  labs(
+    title = "Distribuição dos óbitos por tipo de síndrome hipertensiva",
+    subtitle = "Piauí, 2019–2024 (n = 62)",
+    x = NULL, y = "Número de óbitos"
+  ) +
+  tema_final
+
+figura1_final
+salvar_figura_final(figura1_final, "figura1_final", largura = 16, altura = 9)
+```
+
+### Figura 2 — Perfil epidemiológico (painel A·B·C·D)
+
+```{r figura2-final, fig.width=7.1, fig.height=5.9}
+mini_perfil <- function(dados, dimensao, titulo, cor_barra = cor_estado) {
+  ggplot(dados, aes(x = .data[[dimensao]], y = n)) +
+    geom_col(fill = cor_barra, width = 0.65) +
+    geom_text(aes(label = paste0(n, " (", round(pct, 1), "%)")),
+              hjust = -0.1, size = 2.6, family = fonte_base) +
+    coord_flip(clip = "off") +
+    scale_y_continuous(limits = c(0, max(dados$n) * 1.35)) +
+    labs(title = titulo, x = NULL, y = "Número de óbitos") +
+    tema_final
+}
+
+painel_a <- mini_perfil(perfil_faixa, "faixa_etaria", "A · Faixa etária")
+painel_b <- mini_perfil(filter(perfil_raca, n > 0), "raca_cor", "B · Raça/cor")
+painel_c <- mini_perfil(perfil_escolaridade, "escolaridade", "C · Escolaridade")
+painel_d <- mini_perfil(filter(perfil_local, n > 0), "local", "D · Local de ocorrência")
+
+figura2_final <- (painel_a | painel_b) / (painel_c | painel_d) +
+  plot_annotation(
+    title = "Perfil epidemiológico dos óbitos por SHG",
+    subtitle = "Piauí, 2019–2024 (n = 62)"
+  ) &
+  theme(plot.title = element_text(face = "bold", size = 12, family = fonte_base),
+        plot.subtitle = element_text(size = 9.5, color = "grey35", family = fonte_base))
+
+figura2_final
+salvar_figura_final(figura2_final, "figura2_final", largura = 18, altura = 15)
+```
+
+*Painéis já rotulados A/B/C/D nos próprios títulos (mais robusto para
+exportação em Word do que a tag automática do `patchwork`, que pode se
+perder ao colar a imagem).*
+
+### Figura 3 — Evolução temporal
+
+```{r figura3-final, fig.width=6.3, fig.height=3.5}
+figura3_final <- ggplot(evolucao, aes(x = factor(ano), y = obitos_shg)) +
+  geom_col(fill = cor_estado, width = 0.6) +
+  geom_text(aes(label = obitos_shg), vjust = -0.6, size = 3.2,
+            fontface = "bold", family = fonte_base) +
+  geom_text(aes(label = paste0(round(pct_shg, 1), "%")),
+            vjust = 1.8, size = 2.7, color = "white", family = fonte_base) +
+  scale_y_continuous(limits = c(0, max(evolucao$obitos_shg) * 1.2)) +
+  labs(
+    title = "Evolução temporal dos óbitos por SHG",
+    subtitle = "Piauí, 2019–2024 — % em relação ao total de óbitos maternos do ano",
+    x = "Ano", y = "Número de óbitos por SHG"
+  ) +
+  tema_final
+
+figura3_final
+salvar_figura_final(figura3_final, "figura3_final", largura = 16, altura = 9)
+```
+
+### Figura 4 — Comparação Piauí × Cocais (painel A·B)
+
+```{r figura4-final, fig.width=7.9, fig.height=3.9}
+painel_rmm_geral <- ggplot(rmm_valor, aes(x = factor(ano), y = rmm, fill = area, group = area)) +
+  geom_col(position = position_dodge(width = 0.85), width = 0.75) +
+  geom_text(aes(label = round(rmm, 1)),
+            position = position_dodge(width = 0.85), vjust = -0.5, size = 2.3,
+            family = fonte_base) +
+  scale_fill_manual(values = c("Cocais" = cor_cocais, "Estado" = cor_estado)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.18))) +
+  labs(title = "A · RMM geral (todas as causas)",
+       x = "Ano", y = "RMM (por 100 mil NV)") +
+  tema_final
+
+painel_rmm_shg <- ggplot(shg_ano_area, aes(x = factor(ano), y = rmm_shg, fill = area, group = area)) +
+  geom_col(position = position_dodge(width = 0.85), width = 0.75) +
+  geom_text(aes(label = ifelse(obitos_shg == 0, "0", round(rmm_shg, 1))),
+            position = position_dodge(width = 0.85), vjust = -0.5, size = 2.3,
+            family = fonte_base) +
+  scale_fill_manual(values = c("Cocais" = cor_cocais, "Estado" = cor_estado)) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.18))) +
+  labs(title = "B · RMM específica de SHG",
+       x = "Ano", y = "RMM-SHG (por 100 mil NV)") +
+  tema_final
+
+figura4_final <- (painel_rmm_geral | painel_rmm_shg) +
+  plot_layout(guides = "collect") +
+  plot_annotation(
+    title = "Comparação: Estado do Piauí × Região de Saúde dos Cocais",
+    subtitle = "Razão de Mortalidade Materna por 100 mil nascidos vivos"
+  ) &
+  theme(legend.position = "bottom",
+        plot.title = element_text(face = "bold", size = 12, family = fonte_base),
+        plot.subtitle = element_text(size = 9.5, color = "grey35", family = fonte_base))
+
+figura4_final
+salvar_figura_final(figura4_final, "figura4_final", largura = 20, altura = 10)
+```
+
+*Fonte (Figuras 1–4): MS/SVSA/CGIAE — SIM/DATASUS e SINASC/DATASUS.
+Tabela 1 = tabela-síntese da Seção 8. Arquivos finais em `figuras/`, com
+sufixo `_final` (PNG 300dpi e PDF vetorial).*
 
 ```{r conclusao, include=FALSE}
 message("Concluído. Figuras em '", dir_figuras, "/' e tabelas em '", dir_tabelas, "/'.")

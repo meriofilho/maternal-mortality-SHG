@@ -80,3 +80,21 @@ maternos de todas as causas — essa limitação está resolvida na Seção 17.
   na primeira execução. Validamos que o filtro por CID de SHG neste
   microdado reproduz exatamente os mesmos 62 óbitos usados no resto da
   análise, ano a ano.
+
+## Figuras finais para o artigo (Seção 20)
+
+O periódico/evento limita a 5 figuras+tabelas no total. `figuras/*_final.png`
+e `*_final.pdf` são as 4 figuras consolidadas (uma delas em painel A/B/C/D
+via `patchwork`), cobrindo o objetivo geral e os 3 objetivos específicos —
+a Tabela 1 é a tabela-síntese da Seção 8:
+
+| # | Arquivo | Conteúdo | Objetivo |
+|---|---|---|---|
+| Figura 1 | `figura1_final` | Distribuição por tipo de SHG | específico 2 |
+| Figura 2 | `figura2_final` | Perfil epidemiológico (A faixa etária · B raça/cor · C escolaridade · D local) | específico 1 |
+| Figura 3 | `figura3_final` | Evolução temporal | específico 3 |
+| Figura 4 | `figura4_final` | Comparação Piauí × Cocais (A RMM geral · B RMM específica de SHG) | geral |
+
+As demais análises (panorama das 12 regiões, idade exata, sazonalidade,
+município, testes estatísticos) ficam descritas em texto no artigo, sem
+figura própria.
