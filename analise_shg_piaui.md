@@ -2,7 +2,7 @@
 ================
 Susana Silva LimaRosa Maria do Rego LimaRomério de Oliveira Lima Filho
 (responsável pela análise)Mara Regina Pereira Viana Damasceno Feitosa
-10/08/2026
+17/08/2026
 
 - [Sobre esta análise](#sobre-esta-análise)
 - [1. Pacotes](#1-pacotes)
@@ -70,7 +70,7 @@ tabelas em `figuras/` e `tabelas/`.
 ``` r
 pacotes <- c("readxl", "dplyr", "tidyr", "stringr", "forcats",
              "ggplot2", "scales", "readr", "sysfonts", "showtext", "tibble",
-             "patchwork")
+             "patchwork", "svglite")
 faltando <- pacotes[!(pacotes %in% installed.packages()[, "Package"])]
 if (length(faltando) > 0) install.packages(faltando, repos = "https://cloud.r-project.org")
 invisible(lapply(pacotes, library, character.only = TRUE))
@@ -1108,7 +1108,7 @@ teste_regiao
     ##  1e+05 replicates)
     ## 
     ## data:  mat_regiao
-    ## p-value = 0.1216
+    ## p-value = 0.1224
     ## alternative hypothesis: two.sided
 
 *Fonte: MS/SVSA/CGIAE — SIM/DATASUS. H0: a fração de óbitos que é SHG é
@@ -1420,6 +1420,18 @@ salvar_figura_final <- function(grafico, nome, largura, altura) {
   ggsave(file.path(dir_figuras, paste0(nome, ".pdf")), grafico,
          width = largura, height = altura, units = "cm",
          device = grDevices::cairo_pdf)
+
+  # SVG com texto de verdade (<text>, editável em Illustrator/Inkscape),
+  # não em contorno vetorial — precisa desligar o showtext um instante
+  # para o svglite usar a fonte Roboto instalada no sistema como texto
+  # real, em vez de convertê-la em path (que é o que acontece no PNG/PDF
+  # acima, propositalmente, para casar 100% com o visual já aprovado).
+  # Requer Roboto instalada no Windows (Configurações > Fontes) — se não
+  # estiver, o SVG cai para a fonte padrão do sistema.
+  showtext_auto(FALSE)
+  ggsave(file.path(dir_figuras, paste0(nome, ".svg")), grafico,
+         width = largura, height = altura, units = "cm", device = "svg")
+  showtext_auto(TRUE)
 }
 ```
 

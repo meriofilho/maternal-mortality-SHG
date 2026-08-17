@@ -14,7 +14,6 @@
 <meta name="author" content="Romério de Oliveira Lima Filho (responsável pela análise)" />
 <meta name="author" content="Mara Regina Pereira Viana Damasceno Feitosa" />
 
-<meta name="date" content="2026-10-08" />
 
 <title>Óbitos Maternos por Síndromes Hipertensivas na Gestação (SHG)</title>
 
@@ -2780,7 +2779,7 @@ comparação com a Região de Saúde dos Cocais, 2019–2024</h3>
 <h4 class="author">Romério de Oliveira Lima Filho (responsável pela
 análise)</h4>
 <h4 class="author">Mara Regina Pereira Viana Damasceno Feitosa</h4>
-<h4 class="date">10/08/2026</h4>
+<h4 class="date">17/08/2026</h4>
 
 </div>
 
@@ -2803,7 +2802,7 @@ as figuras e tabelas em <code>figuras/</code> e
 <h2>1. Pacotes</h2>
 <pre class="r"><code>pacotes &lt;- c(&quot;readxl&quot;, &quot;dplyr&quot;, &quot;tidyr&quot;, &quot;stringr&quot;, &quot;forcats&quot;,
              &quot;ggplot2&quot;, &quot;scales&quot;, &quot;readr&quot;, &quot;sysfonts&quot;, &quot;showtext&quot;, &quot;tibble&quot;,
-             &quot;patchwork&quot;)
+             &quot;patchwork&quot;, &quot;svglite&quot;)
 faltando &lt;- pacotes[!(pacotes %in% installed.packages()[, &quot;Package&quot;])]
 if (length(faltando) &gt; 0) install.packages(faltando, repos = &quot;https://cloud.r-project.org&quot;)
 invisible(lapply(pacotes, library, character.only = TRUE))</code></pre>
@@ -3568,7 +3567,7 @@ teste_regiao</code></pre>
 ##  1e+05 replicates)
 ## 
 ## data:  mat_regiao
-## p-value = 0.1208
+## p-value = 0.1219
 ## alternative hypothesis: two.sided</code></pre>
 <p><em>Fonte: MS/SVSA/CGIAE — SIM/DATASUS. H0: a fração de óbitos que é
 SHG é igual em todas as regiões (teste exato de Fisher, tabela 12 ×
@@ -3782,6 +3781,18 @@ salvar_figura_final &lt;- function(grafico, nome, largura, altura) {
   ggsave(file.path(dir_figuras, paste0(nome, &quot;.pdf&quot;)), grafico,
          width = largura, height = altura, units = &quot;cm&quot;,
          device = grDevices::cairo_pdf)
+
+  # SVG com texto de verdade (&lt;text&gt;, editável em Illustrator/Inkscape),
+  # não em contorno vetorial — precisa desligar o showtext um instante
+  # para o svglite usar a fonte Roboto instalada no sistema como texto
+  # real, em vez de convertê-la em path (que é o que acontece no PNG/PDF
+  # acima, propositalmente, para casar 100% com o visual já aprovado).
+  # Requer Roboto instalada no Windows (Configurações &gt; Fontes) — se não
+  # estiver, o SVG cai para a fonte padrão do sistema.
+  showtext_auto(FALSE)
+  ggsave(file.path(dir_figuras, paste0(nome, &quot;.svg&quot;)), grafico,
+         width = largura, height = altura, units = &quot;cm&quot;, device = &quot;svg&quot;)
+  showtext_auto(TRUE)
 }</code></pre>
 <div id="figura-1-distribuição-por-tipo-de-síndrome-hipertensiva-1" class="section level3">
 <h3>Figura 1 — Distribuição por tipo de síndrome hipertensiva</h3>
