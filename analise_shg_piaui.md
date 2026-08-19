@@ -1,8 +1,12 @@
-Óbitos Maternos por Síndromes Hipertensivas na Gestação (SHG)
+Perfil Epidemiológico da Morbimortalidade por Síndromes Hipertensivas na
+Gestação: Contribuições da Enfermagem para a Prevenção
 ================
-Susana Silva LimaRosa Maria do Rego LimaRomério de Oliveira Lima Filho
-(responsável pela análise)Mara Regina Pereira Viana Damasceno Feitosa
-17/08/2026
+Susana Silva Lima¹Romério de Oliveira Lima Filho² (responsável pela
+análise)Rosa Maria do Rego Lima¹Mara Regina Pereira Viana Damasceno
+Feitosa³¹ Universidade Federal do Piauí, Piripiri, PI, Brasil · ²
+Universidade Federal do Rio Grande do Norte, Natal, RN, Brasil · ³
+Centro Universitário Chrisfapi, Piripiri, PI, Brasil
+19/08/2026
 
 - [Sobre esta análise](#sobre-esta-análise)
 - [1. Pacotes](#1-pacotes)
@@ -1108,7 +1112,7 @@ teste_regiao
     ##  1e+05 replicates)
     ## 
     ## data:  mat_regiao
-    ## p-value = 0.1224
+    ## p-value = 0.1212
     ## alternative hypothesis: two.sided
 
 *Fonte: MS/SVSA/CGIAE — SIM/DATASUS. H0: a fração de óbitos que é SHG é

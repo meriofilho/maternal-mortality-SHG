@@ -1,17 +1,21 @@
-# Óbitos Maternos por Síndromes Hipertensivas na Gestação (SHG) — Piauí, 2019–2024
+# Perfil Epidemiológico da Morbimortalidade por Síndromes Hipertensivas na Gestação: Contribuições da Enfermagem para a Prevenção
 
-Análise descritiva do perfil epidemiológico dos óbitos maternos por
-Síndromes Hipertensivas na Gestação (SHG) no Estado do Piauí, com
-comparação à Região de Saúde dos Cocais, no período de 2019 a 2024.
+Estudo epidemiológico do perfil de morbimortalidade por Síndromes
+Hipertensivas na Gestação (SHG) no Estado do Piauí, com comparação à
+Região de Saúde dos Cocais, no período de 2019 a 2024.
 
 CID-10 considerados: **O10, O11, O13, O14, O15 e O16**.
 
 ## Autores
 
-- **Susana Silva Lima**
-- Rosa Maria do Rego Lima
-- **Romério de Oliveira Lima Filho** — responsável pela análise
-- Mara Regina Pereira Viana Damasceno Feitosa
+- **Susana Silva Lima**¹
+- Romério de Oliveira Lima Filho² — responsável pela análise de dados
+- Rosa Maria do Rego Lima¹
+- Mara Regina Pereira Viana Damasceno Feitosa³
+
+¹ Universidade Federal do Piauí, Piripiri, Piauí, Brasil.
+² Universidade Federal do Rio Grande do Norte, Natal, Rio Grande do Norte, Brasil.
+³ Centro Universitário Chrisfapi, Piripiri, Piauí, Brasil.
 
 ## Fonte dos dados
 

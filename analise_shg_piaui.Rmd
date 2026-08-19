@@ -1,11 +1,12 @@
 ---
-title: "Óbitos Maternos por Síndromes Hipertensivas na Gestação (SHG)"
+title: "Perfil Epidemiológico da Morbimortalidade por Síndromes Hipertensivas na Gestação: Contribuições da Enfermagem para a Prevenção"
 subtitle: "Perfil epidemiológico no Estado do Piauí e comparação com a Região de Saúde dos Cocais, 2019–2024"
 author:
-  - "Susana Silva Lima"
-  - "Rosa Maria do Rego Lima"
-  - "Romério de Oliveira Lima Filho (responsável pela análise)"
-  - "Mara Regina Pereira Viana Damasceno Feitosa"
+  - "Susana Silva Lima¹"
+  - "Romério de Oliveira Lima Filho² (responsável pela análise)"
+  - "Rosa Maria do Rego Lima¹"
+  - "Mara Regina Pereira Viana Damasceno Feitosa³"
+  - "¹ Universidade Federal do Piauí, Piripiri, PI, Brasil · ² Universidade Federal do Rio Grande do Norte, Natal, RN, Brasil · ³ Centro Universitário Chrisfapi, Piripiri, PI, Brasil"
 date: "`r format(Sys.Date(), '%d/%m/%Y')`"
 output:
   html_document:

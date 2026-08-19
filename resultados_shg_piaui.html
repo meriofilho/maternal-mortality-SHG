@@ -1,4 +1,4 @@
-<title>Óbitos Maternos por SHG — Piauí, 2019–2024</title>
+<title>Morbimortalidade por SHG — Piauí, 2019–2024</title>
 <style>
   :root{
     --paper:#EFF1EE;
@@ -68,7 +68,10 @@
   .authors .name{ color:var(--ink); }
   .authors .name.lead{ font-weight:700; }
   .authors .sep{ color:var(--line); margin:0 2px; }
-  .lead-role{ font-size:12px; color:var(--muted); margin-top:4px; }
+  .authors sup{ font-size:9px; color:var(--accent); font-weight:700; margin-left:1px; }
+  .affiliations{ font-size:11px; color:var(--muted); margin-top:8px; line-height:1.7; }
+  .affiliations sup{ font-size:9px; margin-right:3px; }
+  .lead-role{ font-size:12px; color:var(--muted); margin-top:10px; }
   .lead-role strong{ color:var(--accent); font-weight:700; }
 
   section{ margin-top:52px; }
@@ -76,6 +79,9 @@
   .section-num{ font-family:ui-serif,serif; font-size:13px; color:var(--accent); font-weight:600; }
   h2{ font-size:21px; }
   .section-desc{ color:var(--muted); font-size:13.5px; margin-top:6px; max-width:68ch; line-height:1.5; }
+  .metodo{ color:var(--muted); font-size:12px; margin-top:8px; max-width:68ch; line-height:1.55; }
+  .metodo .tag{ font-weight:700; text-transform:uppercase; letter-spacing:.04em; font-size:9.5px; color:var(--accent); margin-right:5px; }
+  .metodo code{ font-family:ui-monospace, "SF Mono", Consolas, monospace; font-size:11px; background:var(--paper); border-radius:3px; padding:1px 4px; color:var(--ink-soft); }
 
   /* stat tiles */
   .stats{ display:grid; grid-template-columns:repeat(5,1fr); gap:2px; background:var(--line); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; margin-top:18px; }
@@ -154,10 +160,15 @@
       <span class="sep">·</span>
       <span class="meta">Fonte: MS/SVSA/CGIAE — Sistema de Informações sobre Mortalidade (SIM) e SINASC, via DATASUS/Tabnet</span>
     </div>
-    <h1>Óbitos maternos por Síndromes Hipertensivas na Gestação</h1>
+    <h1>Perfil epidemiológico da morbimortalidade por síndromes hipertensivas na gestação: contribuições da enfermagem para a prevenção</h1>
     <p class="subtitle">Perfil epidemiológico no Estado do Piauí e comparação com a Região de Saúde dos Cocais, 2019–2024 (CID-10: O10, O11, O13, O14, O15, O16).</p>
     <p class="authors">
-      <span class="name lead">Susana Silva Lima</span><span class="sep">·</span><span class="name">Rosa Maria do Rego Lima</span><span class="sep">·</span><span class="name">Romério de Oliveira Lima Filho</span><span class="sep">·</span><span class="name">Mara Regina Pereira Viana Damasceno Feitosa</span>
+      <span class="name lead">Susana Silva Lima<sup>1</sup></span><span class="sep">·</span><span class="name">Romério de Oliveira Lima Filho<sup>2</sup></span><span class="sep">·</span><span class="name">Rosa Maria do Rego Lima<sup>1</sup></span><span class="sep">·</span><span class="name">Mara Regina Pereira Viana Damasceno Feitosa<sup>3</sup></span>
+    </p>
+    <p class="affiliations">
+      <sup>1</sup> Universidade Federal do Piauí, Piripiri, Piauí, Brasil.<br>
+      <sup>2</sup> Universidade Federal do Rio Grande do Norte, Natal, Rio Grande do Norte, Brasil.<br>
+      <sup>3</sup> Centro Universitário Chrisfapi, Piripiri, Piauí, Brasil.
     </p>
     <p class="lead-role">Responsável pela análise de dados: <strong>Romério de Oliveira Lima Filho</strong></p>
   </header>
@@ -175,6 +186,7 @@
   <section>
     <div class="section-head"><span class="section-num">01</span><h2>Distribuição por tipo de síndrome hipertensiva</h2></div>
     <p class="section-desc">Objetivo específico: identificar a distribuição dos casos por tipo de síndrome hipertensiva gestacional. Nenhum óbito foi registrado sob O11 no período — a categoria não aparece no gráfico.</p>
+    <p class="metodo"><span class="tag">Método</span>Frequência absoluta e relativa de cada categoria CID-10 (O10, O13, O14, O15, O16) sobre o total de óbitos por SHG, com intervalo de confiança de 95% (binomial exato).</p>
 
     <div class="card">
       <h3>Óbitos por categoria CID-10 · Piauí, 2019–2024 (n = 62)</h3>
@@ -195,6 +207,7 @@
   <section>
     <div class="section-head"><span class="section-num">02</span><h2>Perfil epidemiológico dos óbitos por SHG</h2></div>
     <p class="section-desc">Objetivo específico: traçar o perfil por faixa etária, etnia/cor, escolaridade e local de ocorrência (Piauí, 2019–2024, n = 62).</p>
+    <p class="metodo"><span class="tag">Método</span>Frequência absoluta e relativa de cada categoria (faixa etária, raça/cor, escolaridade, local de ocorrência) sobre o total de óbitos por SHG, a partir das tabelas do SIM/Tabnet.</p>
 
     <div class="grid2">
       <div class="card">
@@ -251,6 +264,7 @@
   <section>
     <div class="section-head"><span class="section-num">03</span><h2>Evolução temporal dos óbitos por SHG</h2></div>
     <p class="section-desc">Objetivo específico: analisar a evolução temporal. A barra mostra o número absoluto de óbitos por SHG; o percentual abaixo indica a participação da SHG no total de óbitos maternos daquele ano.</p>
+    <p class="metodo"><span class="tag">Método</span>Número de óbitos por SHG e proporção sobre o total de óbitos maternos, por ano; tendência avaliada por teste de Cochran-Armitage (proporção) e regressão de Poisson (razão de mortalidade específica de SHG por nascidos vivos).</p>
 
     <div class="card">
       <h3>Óbitos por SHG e participação no total de óbitos maternos · Piauí</h3>
@@ -275,6 +289,7 @@
   <section>
     <div class="section-head"><span class="section-num">04</span><h2>Comparação: Estado do Piauí × Região de Saúde dos Cocais</h2></div>
     <p class="section-desc">Objetivo geral: comparação da mortalidade materna entre a Região dos Cocais e o Estado. Razão de Mortalidade Materna (RMM) por 100 mil nascidos vivos, calculada com nascidos vivos (SINASC) de cada território.</p>
+    <p class="metodo"><span class="tag">Método</span>RMM = óbitos maternos ÷ nascidos vivos × 100.000. A RMM específica de SHG por região exigiu consulta adicional no Tabnet (Região de Saúde × CID-10, já que essa tabela cruzada não está disponível de forma direta). Comparação Cocais x resto do Estado por teste de razão de taxas de Poisson exato.</p>
 
     <div class="card">
       <h3>RMM geral — todas as causas de óbito materno</h3>
@@ -392,6 +407,7 @@
   <section>
     <div class="section-head"><span class="section-num">05</span><h2>Panorama completo: as 12 Regiões de Saúde do Piauí</h2></div>
     <p class="section-desc">Contexto adicional: como a SHG se compara entre todas as regiões, não só Cocais. À esquerda, óbitos maternos de todas as causas; à direita, quantos desses óbitos foram por SHG em cada região.</p>
+    <p class="metodo"><span class="tag">Método</span>Óbitos maternos totais e óbitos por SHG obtidos por Região de Saúde; associação entre região e ocorrência de SHG testada por Fisher exato (tabela 12×2, com simulação de Monte Carlo para o p-valor).</p>
 
     <div class="grid2">
       <div class="card">
@@ -443,6 +459,7 @@
   <section>
     <div class="section-head"><span class="section-num">06</span><h2>O perfil da SHG é diferente do perfil das outras causas maternas?</h2></div>
     <p class="section-desc">Teste exato de Fisher comparando quem morreu por SHG com quem morreu por outra causa materna no mesmo período, em cada variável sociodemográfica (H0: a distribuição não difere entre os dois grupos).</p>
+    <p class="metodo"><span class="tag">Método</span>Tabelas de contingência SHG × demais causas maternas, uma por variável sociodemográfica, testadas por Fisher exato no software R; considerado estatisticamente significativo p ≤ 0,05.</p>
 
     <div class="card">
       <h3>Resultado dos testes</h3>
@@ -472,6 +489,7 @@
   <section>
     <div class="section-head"><span class="section-num">07</span><h2>Idade exata, sazonalidade e município (microdado do SIM)</h2></div>
     <p class="section-desc">Enriquecimento adicional: em vez das tabelas agregadas do Tabnet, esta seção usa os registros individuais (Declaração de Óbito anonimizada) do SIM. Validamos que esse microdado reproduz exatamente os mesmos 62 óbitos usados no restante da análise.</p>
+    <p class="metodo"><span class="tag">Método</span>Microdados individuais do SIM obtidos via pacote <code>microdatasus</code> (R), a partir do OpenDataSUS; sazonalidade testada por qui-quadrado de aderência à distribuição uniforme entre os 12 meses; município de residência identificado a partir do código IBGE de cada registro.</p>
 
     <div class="card">
       <h3>Idade exata</h3>
@@ -547,7 +565,7 @@
 
   <footer>
     <div class="col">Fonte: MS/SVSA/CGIAE — Sistema de Informações sobre Mortalidade (SIM) e Sistema de Informações sobre Nascidos Vivos (SINASC), DATASUS/Tabnet. Dados finais até 2024, atualizados em 02/12/2025. Óbitos por local de residência da falecida.</div>
-    <div class="col">Análise elaborada a partir de "Gráficos e indicadores.xlsx", "Óbitos maternos piauí 2019 a 2024.xlsx" e consulta adicional ao Tabnet (Região de Saúde × CID-10) — Estudo Epidemiológico SHG, Piauí. Julho de 2026.</div>
+    <div class="col">Análise processada no software R/RStudio, a partir de "Gráficos e indicadores.xlsx", "Óbitos maternos piauí 2019 a 2024.xlsx", consulta adicional ao Tabnet (Região de Saúde × CID-10) e microdados do SIM (OpenDataSUS) — Estudo Epidemiológico SHG, Piauí. Julho de 2026.</div>
   </footer>
 
 </div>
