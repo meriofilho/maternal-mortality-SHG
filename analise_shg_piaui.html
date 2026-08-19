@@ -3572,7 +3572,7 @@ teste_regiao</code></pre>
 ##  1e+05 replicates)
 ## 
 ## data:  mat_regiao
-## p-value = 0.1227
+## p-value = 0.1212
 ## alternative hypothesis: two.sided</code></pre>
 <p><em>Fonte: MS/SVSA/CGIAE — SIM/DATASUS. H0: a fração de óbitos que é
 SHG é igual em todas as regiões (teste exato de Fisher, tabela 12 ×
@@ -3914,6 +3914,77 @@ SINASC/DATASUS. Tabela 1 = tabela-síntese da Seção 8. Arquivos finais em
 <code>figuras/</code>, com sufixo <code>_final</code> (PNG 300dpi e PDF
 vetorial).</em></p>
 </div>
+</div>
+<div id="tabela-1-em-word-.docx" class="section level2">
+<h2>21. Tabela 1 em Word (.docx)</h2>
+<p><em>A tabela-síntese (Seção 8) só existia embutida no relatório HTML
+— esta seção gera a mesma tabela como um arquivo <code>.docx</code>
+pronto para colar no artigo, com título, bordas e nota de
+fonte.</em></p>
+<pre class="r"><code>if (!requireNamespace(&quot;officer&quot;, quietly = TRUE)) install.packages(&quot;officer&quot;, repos = &quot;https://cloud.r-project.org&quot;)
+if (!requireNamespace(&quot;flextable&quot;, quietly = TRUE)) install.packages(&quot;flextable&quot;, repos = &quot;https://cloud.r-project.org&quot;)
+library(officer)
+library(flextable)
+
+# Garante uma linha para cada um dos 6 códigos de SHG, mesmo O11 (sem
+# nenhum óbito no período, portanto ausente de shg_ano)
+tabela1_dados &lt;- tibble(cid = factor(cid_shg, levels = cid_shg)) %&gt;%
+  left_join(shg_ano %&gt;% select(-rotulo), by = &quot;cid&quot;) %&gt;%
+  mutate(rotulo = unname(rotulos_cid[as.character(cid)])) %&gt;%
+  mutate(across(c(`2019`, `2020`, `2021`, `2022`, `2023`, `2024`, Total),
+                ~ replace_na(as.numeric(.), 0))) %&gt;%
+  mutate(pct = round(Total / sum(Total) * 100, 1)) %&gt;%
+  select(rotulo, `2019`, `2020`, `2021`, `2022`, `2023`, `2024`, Total, pct)
+
+linha_total &lt;- tabela1_dados %&gt;%
+  summarise(
+    rotulo  = &quot;Total SHG&quot;,
+    `2019`  = sum(`2019`), `2020` = sum(`2020`), `2021` = sum(`2021`),
+    `2022`  = sum(`2022`), `2023` = sum(`2023`), `2024` = sum(`2024`),
+    Total   = sum(Total),  pct    = sum(pct)
+  )
+
+tabela1_fmt &lt;- bind_rows(tabela1_dados, linha_total) %&gt;%
+  mutate(across(`2019`:Total, ~ ifelse(. == 0, &quot;–&quot;, format(., big.mark = &quot;.&quot;))),
+         pct = paste0(sub(&quot;\\.&quot;, &quot;,&quot;, format(pct, nsmall = 1)), &quot;%&quot;)) %&gt;%
+  rename(`Categoria CID-10` = rotulo, `%` = pct)
+
+ft &lt;- flextable(tabela1_fmt) %&gt;%
+  theme_booktabs() %&gt;%
+  bold(part = &quot;header&quot;) %&gt;%
+  bold(i = nrow(tabela1_fmt)) %&gt;%
+  align(j = 2:9, align = &quot;right&quot;, part = &quot;all&quot;) %&gt;%
+  fontsize(size = 10, part = &quot;all&quot;) %&gt;%
+  font(fontname = &quot;Calibri&quot;, part = &quot;all&quot;) %&gt;%
+  width(j = 1, width = 6.5, unit = &quot;cm&quot;) %&gt;%
+  autofit()
+
+doc &lt;- read_docx() %&gt;%
+  body_add_par(&quot;Tabela 1&quot;, style = &quot;heading 1&quot;) %&gt;%
+  body_add_par(
+    &quot;Óbitos maternos por Síndromes Hipertensivas na Gestação (SHG), segundo categoria CID-10 e ano de ocorrência — Piauí, 2019–2024.&quot;,
+    style = &quot;Normal&quot;
+  ) %&gt;%
+  body_add_flextable(ft) %&gt;%
+  body_add_par(
+    &quot;Fonte: elaborado pelos autores a partir de dados do SIM/DATASUS.&quot;,
+    style = &quot;Normal&quot;
+  )
+
+print(doc, target = file.path(dir_tabelas, &quot;tabela1_final.docx&quot;))
+
+# Confere que o arquivo foi escrito e tem a estrutura esperada (7 linhas
+# de dados + 1 de total + 1 de cabeçalho = 9 linhas, 9 colunas)
+resumo_docx &lt;- officer::docx_summary(read_docx(file.path(dir_tabelas, &quot;tabela1_final.docx&quot;)))
+tabela_no_docx &lt;- resumo_docx[resumo_docx$content_type == &quot;table cell&quot;, ]
+cat(&quot;Linhas x colunas na tabela do .docx:&quot;, length(unique(tabela_no_docx$row_id)),
+    &quot;x&quot;, length(unique(tabela_no_docx$cell_id)), &quot;\n&quot;)</code></pre>
+<pre><code>## Linhas x colunas na tabela do .docx: 8 x 9</code></pre>
+<pre class="r"><code># Também mantemos uma cópia em .csv, para quem preferir importar os
+# números direto em vez de copiar a tabela do Word
+salvar_tabela(bind_rows(tabela1_dados, linha_total), &quot;tabela1_final&quot;)</code></pre>
+<p><em>Arquivo gerado: <code>tabelas/tabela1_final.docx</code> (e
+<code>tabelas/tabela1_final.csv</code>).</em></p>
 </div>
 
 

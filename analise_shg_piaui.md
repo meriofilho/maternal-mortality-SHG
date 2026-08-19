@@ -53,6 +53,7 @@ Centro Universitário Chrisfapi, Piripiri, PI, Brasil
   - [Figura 3 — Evolução temporal](#figura-3--evolução-temporal)
   - [Figura 4 — Comparação Piauí × Cocais (painel
     A·B)](#figura-4--comparação-piauí--cocais-painel-ab)
+- [21. Tabela 1 em Word (.docx)](#21-tabela-1-em-word-docx)
 
 ## Sobre esta análise
 
@@ -1112,7 +1113,7 @@ teste_regiao
     ##  1e+05 replicates)
     ## 
     ## data:  mat_regiao
-    ## p-value = 0.1212
+    ## p-value = 0.1206
     ## alternative hypothesis: two.sided
 
 *Fonte: MS/SVSA/CGIAE — SIM/DATASUS. H0: a fração de óbitos que é SHG é
@@ -1578,3 +1579,81 @@ salvar_figura_final(figura4_final, "figura4_final", largura = 20, altura = 10)
 *Fonte (Figuras 1–4): MS/SVSA/CGIAE — SIM/DATASUS e SINASC/DATASUS.
 Tabela 1 = tabela-síntese da Seção 8. Arquivos finais em `figuras/`, com
 sufixo `_final` (PNG 300dpi e PDF vetorial).*
+
+## 21. Tabela 1 em Word (.docx)
+
+*A tabela-síntese (Seção 8) só existia embutida no relatório HTML — esta
+seção gera a mesma tabela como um arquivo `.docx` pronto para colar no
+artigo, com título, bordas e nota de fonte.*
+
+``` r
+if (!requireNamespace("officer", quietly = TRUE)) install.packages("officer", repos = "https://cloud.r-project.org")
+if (!requireNamespace("flextable", quietly = TRUE)) install.packages("flextable", repos = "https://cloud.r-project.org")
+library(officer)
+library(flextable)
+
+# Garante uma linha para cada um dos 6 códigos de SHG, mesmo O11 (sem
+# nenhum óbito no período, portanto ausente de shg_ano)
+tabela1_dados <- tibble(cid = factor(cid_shg, levels = cid_shg)) %>%
+  left_join(shg_ano %>% select(-rotulo), by = "cid") %>%
+  mutate(rotulo = unname(rotulos_cid[as.character(cid)])) %>%
+  mutate(across(c(`2019`, `2020`, `2021`, `2022`, `2023`, `2024`, Total),
+                ~ replace_na(as.numeric(.), 0))) %>%
+  mutate(pct = round(Total / sum(Total) * 100, 1)) %>%
+  select(rotulo, `2019`, `2020`, `2021`, `2022`, `2023`, `2024`, Total, pct)
+
+linha_total <- tabela1_dados %>%
+  summarise(
+    rotulo  = "Total SHG",
+    `2019`  = sum(`2019`), `2020` = sum(`2020`), `2021` = sum(`2021`),
+    `2022`  = sum(`2022`), `2023` = sum(`2023`), `2024` = sum(`2024`),
+    Total   = sum(Total),  pct    = sum(pct)
+  )
+
+tabela1_fmt <- bind_rows(tabela1_dados, linha_total) %>%
+  mutate(across(`2019`:Total, ~ ifelse(. == 0, "–", format(., big.mark = "."))),
+         pct = paste0(sub("\\.", ",", format(pct, nsmall = 1)), "%")) %>%
+  rename(`Categoria CID-10` = rotulo, `%` = pct)
+
+ft <- flextable(tabela1_fmt) %>%
+  theme_booktabs() %>%
+  bold(part = "header") %>%
+  bold(i = nrow(tabela1_fmt)) %>%
+  align(j = 2:9, align = "right", part = "all") %>%
+  fontsize(size = 10, part = "all") %>%
+  font(fontname = "Calibri", part = "all") %>%
+  width(j = 1, width = 6.5, unit = "cm") %>%
+  autofit()
+
+doc <- read_docx() %>%
+  body_add_par("Tabela 1", style = "heading 1") %>%
+  body_add_par(
+    "Óbitos maternos por Síndromes Hipertensivas na Gestação (SHG), segundo categoria CID-10 e ano de ocorrência — Piauí, 2019–2024.",
+    style = "Normal"
+  ) %>%
+  body_add_flextable(ft) %>%
+  body_add_par(
+    "Fonte: elaborado pelos autores a partir de dados do SIM/DATASUS.",
+    style = "Normal"
+  )
+
+print(doc, target = file.path(dir_tabelas, "tabela1_final.docx"))
+
+# Confere que o arquivo foi escrito e tem a estrutura esperada (7 linhas
+# de dados + 1 de total + 1 de cabeçalho = 9 linhas, 9 colunas)
+resumo_docx <- officer::docx_summary(read_docx(file.path(dir_tabelas, "tabela1_final.docx")))
+tabela_no_docx <- resumo_docx[resumo_docx$content_type == "table cell", ]
+cat("Linhas x colunas na tabela do .docx:", length(unique(tabela_no_docx$row_id)),
+    "x", length(unique(tabela_no_docx$cell_id)), "\n")
+```
+
+    ## Linhas x colunas na tabela do .docx: 8 x 9
+
+``` r
+# Também mantemos uma cópia em .csv, para quem preferir importar os
+# números direto em vez de copiar a tabela do Word
+salvar_tabela(bind_rows(tabela1_dados, linha_total), "tabela1_final")
+```
+
+*Arquivo gerado: `tabelas/tabela1_final.docx` (e
+`tabelas/tabela1_final.csv`).*
